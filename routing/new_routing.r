@@ -121,13 +121,12 @@ routing: make object! [
 
     check_if_url_matches_rule: funct [
         url [string!]
-        rule
+        rule [string!]
     ] [
-        parameters: copy []
-
-        ; convert_rule_to_parse_rule is bound to this function's context, as 'parameters is defined here
-        converted_rule: bind convert_rule_to_parse_rule rule 'parameters   
-        matches: parse url converted_rule
+        converted_rule: convert_rule_to_parse_rule rule
+        parameters: collect compose/only [
+            matches: parse url (converted_rule)
+        ]
         reduce [matches parameters]
     ]
 
@@ -146,14 +145,14 @@ routing: make object! [
                     ; if the parameter was at the end of the rule
                     end ( 
                         append converted_rule compose [
-                            copy parameter_data to end (to-paren [append parameters parameter_data])
+                            copy parameter_data to end (to-paren [keep parameter_data])
                         ]
                         )
                 |
                     ; if the parameter wasn't at the end of the rule
                     copy match_until_after_parameter skip (
                         append converted_rule compose [
-                            copy parameter_data to (match_until_after_parameter) skip (to-paren [append parameters parameter_data])
+                            copy parameter_data to (match_until_after_parameter) skip (to-paren [keep parameter_data])
                         ]
                         ) 
                 ]
