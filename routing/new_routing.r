@@ -19,7 +19,7 @@ routing: make object! [
             if (length? routes_for_method: select routes method) > 0 [
                 print method
                 forskip routes_for_method 2 [
-                    print rejoin [tab first routes_for_method ": " first next routes_for_method]
+                    print rejoin [tab mold first routes_for_method ": " first next routes_for_method]
                 ]
             ]
         ]
@@ -57,11 +57,12 @@ routing: make object! [
                         route_method: "GET"
                     ]
                     route_url: select actual_route 'url
+                    route_rule: convert_rule_to_parse_rule route_url
                     route_controller: select actual_route 'controller
                     
                     ; adds the route to the appropriate block in 'routes
                     routes_for_method: select routes route_method
-                    append routes_for_method reduce [route_url route_controller]
+                    append routes_for_method reduce [route_rule route_controller]
                 ]
             ]
         ]
@@ -92,12 +93,9 @@ routing: make object! [
         routes_for_method: select routes "ANY"
         route_controller_results: get_route_controller routes_for_method request_url
         
+        ; if no match in the ANY routes, try and match in the actual method;s routes
         if (not route_controller_results) [
             routes_for_method: select routes route_method
-            ;print ""
-            ;probe routes
-            ;probe route_method
-            ;probe routes_for_method
             route_controller_results: get_route_controller routes_for_method request_url
         ]
         return route_controller_results
@@ -112,7 +110,7 @@ routing: make object! [
             route: first routes_for_method
             set [matches parameters] check_if_url_matches_rule url_to_check route
             if matches [
-                route_controller: select routes_for_method head route
+                route_controller: first next routes_for_method
                 return reduce [route_controller parameters]
             ]
         ]
@@ -121,9 +119,8 @@ routing: make object! [
 
     check_if_url_matches_rule: funct [
         url [string!]
-        rule [string!]
+        converted_rule [block!]
     ] [
-        converted_rule: convert_rule_to_parse_rule rule
         parameters: collect compose/only [
             matches: parse url (converted_rule)
         ]
