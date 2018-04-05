@@ -11,12 +11,13 @@ routing: make object! [
     route_methods_rule: copy ["GET" | "POST" | "HEAD" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH"]
     
     routes: copy []
+    unconverted_routes: copy []
 
     print_routes: funct [
     ] [
         print "^/##########^/routes:"
         foreach method accepted_route_methods [
-            if (length? routes_for_method: select routes method) > 0 [
+            if (length? routes_for_method: select unconverted_routes method) > 0 [
                 print method
                 forskip routes_for_method 2 [
                     print rejoin [tab mold first routes_for_method ": " first next routes_for_method]
@@ -39,6 +40,7 @@ routing: make object! [
         temp_routes: copy/deep accepted_route_methods
         loop length? temp_routes [temp_routes: insert/only next temp_routes copy []]
         routes: head temp_routes
+        unconverted_routes: copy/deep routes
 
         ; loads the data for each routing file
         routes_to_load: f_map :load routes_to_load
@@ -63,6 +65,9 @@ routing: make object! [
                     ; adds the route to the appropriate block in 'routes
                     routes_for_method: select routes route_method
                     append routes_for_method reduce [route_rule route_controller]
+
+                    unconverted_routes_for_method: select unconverted_routes route_method
+                    append unconverted_routes_for_method reduce [route_url route_controller]
                 ]
             ]
         ]
@@ -90,29 +95,29 @@ routing: make object! [
         ]
         
         ; first checks against "ANY" routes, then the specific route method
-        routes_for_method: select routes "ANY"
-        route_controller_results: get_route_controller routes_for_method request_url
+        ANY_methods_routes: select routes "ANY"
+        route_controller_results: get_route_controller ANY_methods_routes request_url
         
         ; if no match in the ANY routes, try and match in the actual method;s routes
         if (not route_controller_results) [
-            routes_for_method: select routes route_method
-            route_controller_results: get_route_controller routes_for_method request_url
+            routes_for_actual_method: select routes route_method
+            route_controller_results: get_route_controller routes_for_actual_method request_url
         ]
         return route_controller_results
     ]
 
     get_route_controller: funct [
         "gets the route controller for a route URL, checked against the routes for a specific HTTP method"
-        routes_for_method [series!] "the routes to check against"
+        routes [series!] "the routes to check against"
         url [string!] "the URL to check"
     ] [
-        forskip routes_for_method 2 [
-            route: first routes_for_method
+        forskip routes 2 [
+            route: first routes
             parameters: collect compose/only [ ; composes so that keep is defined here
                 matches: parse url (route)
             ]
             if matches [
-                route_controller: first next routes_for_method
+                route_controller: first next routes
                 return reduce [route_controller parameters]
             ]
         ]
