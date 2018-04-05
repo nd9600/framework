@@ -14,7 +14,7 @@ do %helpers.r
 do %config.r
 
 ;brings in the routing functions into an object called 'routing
-do %routing/new_routing.r
+do %routing/routing.r
 
 ;brings in the templating functions into an object called 'templater
 do %views/templater.r

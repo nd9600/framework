@@ -11,15 +11,16 @@ routing: make object! [
     route_methods_rule: copy ["GET" | "POST" | "HEAD" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH"]
     
     routes: copy []
+    unconverted_routes: copy []
 
     print_routes: funct [
     ] [
         print "^/##########^/routes:"
         foreach method accepted_route_methods [
-            if (length? routes_for_method: select routes method) > 0 [
+            if (length? routes_for_method: select unconverted_routes method) > 0 [
                 print method
                 forskip routes_for_method 2 [
-                    print rejoin [tab first routes_for_method ": " first next routes_for_method]
+                    print rejoin [tab mold first routes_for_method ": " first next routes_for_method]
                 ]
             ]
         ]
@@ -39,6 +40,7 @@ routing: make object! [
         temp_routes: copy/deep accepted_route_methods
         loop length? temp_routes [temp_routes: insert/only next temp_routes copy []]
         routes: head temp_routes
+        unconverted_routes: copy/deep routes
 
         ; loads the data for each routing file
         routes_to_load: f_map :load routes_to_load
@@ -57,11 +59,15 @@ routing: make object! [
                         route_method: "GET"
                     ]
                     route_url: select actual_route 'url
+                    route_rule: convert_rule_to_parse_rule route_url
                     route_controller: select actual_route 'controller
                     
                     ; adds the route to the appropriate block in 'routes
                     routes_for_method: select routes route_method
-                    append routes_for_method reduce [route_url route_controller]
+                    append routes_for_method reduce [route_rule route_controller]
+
+                    unconverted_routes_for_method: select unconverted_routes route_method
+                    append unconverted_routes_for_method reduce [route_url route_controller]
                 ]
             ]
         ]
@@ -89,159 +95,64 @@ routing: make object! [
         ]
         
         ; first checks against "ANY" routes, then the specific route method
-        routes_for_method: select routes "ANY"
-        route_controller_results: get_route_controller routes_for_method request_url
+        ANY_methods_routes: select routes "ANY"
+        route_controller_results: get_route_controller ANY_methods_routes request_url
         
+        ; if no match in the ANY routes, try and match in the actual method;s routes
         if (not route_controller_results) [
-            routes_for_method: select routes route_method
-            ;print ""
-            ;probe routes
-            ;probe route_method
-            ;probe routes_for_method
-            route_controller_results: get_route_controller routes_for_method request_url
+            routes_for_actual_method: select routes route_method
+            route_controller_results: get_route_controller routes_for_actual_method request_url
         ]
         return route_controller_results
     ]
 
     get_route_controller: funct [
         "gets the route controller for a route URL, checked against the routes for a specific HTTP method"
-        routes_for_method [series!] "the routes to check against"
-        url_to_check [string!] "the URL to check"
-    ] [   
-        ; tries to find a route in the ones without parameters first
-        route_controller: select routes_for_method url_to_check
-                
-        ; if that fails, loop through all other routes - 
-        ;     iterate over the route URL until the tail of it or url_to_check
-        ;         if route doesn't have parameter, and route and url are different length,
-        ;               break
-        ;         if route[i] == url_to_check[i],
-        ;               continue
-        ;         elseif route[i] == "{",
-        ;               if parameter is last thing in route,
-        ;                   if the url doesnt contain a slash,
-        ;                       try to match char after "}" in route with first matching char in url_to_check
-        ;                       if match,
-        ;                           copy string in between "{" and "}" to variable
-        ;                       if no match,
-        ;                           break
-        ;                   else,
-        ;                       break
-        ;         else,
-        ;               break
-        ;
-        ;         if next chars of route and url_to_check at tail,
-        ;               return head of route
-        ;         else,
-        ;               increment both chars
-        ;     reset position of url_to_check
-        ; return none
-        
-        ;print ""
-        ;print url_to_check
-        ;probe routes_for_method
-
-        if route_controller [
-            return reduce [route_controller []]
-        ]
-
-        forskip routes_for_method 2 [
-            route: first routes_for_method
-            parameters: copy []
-                
-            ;print append copy "^/route: " route
-
-            while [not any [tail? route tail? url_to_check]] [                 
-                route_doesnt_have_parameter: none? find route "{"
-                guards: reduce [route_doesnt_have_parameter (not-equal? length? route length? url_to_check)]
-                if all guards [
-                    break
-                ]
-
-                any [
-                    if (equal? first route first url_to_check) [
-                        ;probe append copy "matched " first route
-                        true
-                    ]
-
-                    if (equal? first route #"{") [
-                        ;probe "{ found, matching with }"
-                        
-                        parameter_is_last_thing_in_route: tail? next find route "}"
-                        either parameter_is_last_thing_in_route [
-                            url_to_check_doesnt_contain_slash: none? find url_to_check "/"
-                            either url_to_check_doesnt_contain_slash [
-                                append parameters url_to_check
-                                route: next find route "}"
-                                url_to_check: tail url_to_check
-                                ] [
-                                    break
-                                ]
-                        ] [
-                            parameters_match: consume_parameter route url_to_check
-                            ;probe parameters_match
-                            either (parameter_match_in_url != false) [
-                                ;probe "matched with }"
-                                chars_after_end_of_parameter_in_route: parameters_match/1
-                                chars_after_end_of_parameter_in_url: parameters_match/2
-                                parameter_match_in_url: parameters_match/3
-                                
-                                append parameters parameter_match_in_url                                
-                                route: chars_after_end_of_parameter_in_route
-                                url_to_check: chars_after_end_of_parameter_in_url
-                            ] [
-                                break
-                            ]
-                        ]
-                    ]
-                    break
-                ]
-                
-                either (all [tail? next route tail? next url_to_check]) [
-                    route_controller: select routes_for_method head route
-                    return reduce [route_controller parameters]
-                ] [
-                    route: next route
-                    url_to_check: next url_to_check
-                ]
+        routes [series!] "the routes to check against"
+        url [string!] "the URL to check"
+    ] [
+        forskip routes 2 [
+            route: first routes
+            parameters: collect compose/only [ ; composes so that keep is defined here
+                matches: parse url (route)
             ]
-            url_to_check: head url_to_check
-            ;probe "end"
+            if matches [
+                route_controller: first next routes
+                return reduce [route_controller parameters]
+            ]
         ]
         return none
     ]
 
-    consume_parameter: funct [
-        "matches and consumes parameters in defined routes and URLs"
-        route [string!] "the defined route with the parameter"
-        url_to_check [string!] "the URL with the parameter"
+    convert_rule_to_parse_rule: funct [
+        "converts a rule of the form abcdef/{}/123{} to Redbol's PARSE rule"
+        rule_as_string [string!]
     ] [
-        ;if match,
-        ;   return string to between "}"
-        ;if no match,
-        ;   return false
-        
-        ;find the first character after } in the route, and all characters after
-        ;   return false if there is none
-        ;find the characters beginning at that single character in the url_to_check
-        ;   return false if there are none
-        ;parameter match will be all characters up to that point
-        ;return the characters after the parameter in the route and url. and the parameter
-        chars_after_end_of_parameter_in_route: next find route "}"
-        char_after_end_of_parameter_in_route: first chars_after_end_of_parameter_in_route
-        
-        if (chars_after_end_of_parameter_in_route = none) [
-            return false
+        converted_rule: copy []
+        conversion_rules: [
+
+            ; handles parameters
+            any [
+                copy match_until_parameter to "{" (append converted_rule match_until_parameter)
+                thru "}" 
+                [
+                    ; if the parameter was at the end of the rule
+                    end ( 
+                        append converted_rule compose [ copy parameter to end (to-paren [keep parameter]) ]
+                    )
+                |   ; if the parameter wasn't at the end of the rule
+                    copy char_after_parameter skip (
+                        append converted_rule compose [
+                            copy parameter to (char_after_parameter) skip (to-paren [keep parameter])
+                        ]
+                    ) 
+                ]
+            ]
+
+            ; used if/when there aren't any parameters
+            copy match_until_end to end (append converted_rule match_until_end)
         ]
-        
-        chars_after_end_of_parameter_in_url: find url_to_check char_after_end_of_parameter_in_route
-                
-        if (none? chars_after_end_of_parameter_in_url) [
-            return false
-        ]
-        
-        parse url_to_check [copy parameter_match_in_url to chars_after_end_of_parameter_in_url]
-                
-        return reduce [chars_after_end_of_parameter_in_route chars_after_end_of_parameter_in_url parameter_match_in_url]
+        parse rule_as_string conversion_rules
+        converted_rule
     ]
 ]
