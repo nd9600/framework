@@ -139,18 +139,22 @@ routing: make object! [
                     ; if the parameter was at the end of the rule
                     end ( 
                         append converted_rule compose [ copy parameter to end (to-paren [keep parameter]) ]
-                    )
-                |   ; if the parameter wasn't at the end of the rule
-                    copy char_after_parameter skip (
+                      )
+
+                    ; if the parameter wasn't at the end of the rule
+                    | copy char_after_parameter skip (
                         append converted_rule compose [
                             copy parameter to (char_after_parameter) skip (to-paren [keep parameter])
                         ]
-                    ) 
+                      ) 
                 ]
             ]
 
             ; used if/when there aren't any parameters
-            copy match_until_end to end (append converted_rule match_until_end)
+            [
+                end 
+                | copy match_until_end to end (append converted_rule match_until_end)
+            ]
         ]
         parse rule_as_string conversion_rules
         converted_rule
