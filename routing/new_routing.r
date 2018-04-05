@@ -104,27 +104,19 @@ routing: make object! [
     get_route_controller: funct [
         "gets the route controller for a route URL, checked against the routes for a specific HTTP method"
         routes_for_method [series!] "the routes to check against"
-        url_to_check [string!] "the URL to check"
+        url [string!] "the URL to check"
     ] [
         forskip routes_for_method 2 [
             route: first routes_for_method
-            set [matches parameters] check_if_url_matches_rule url_to_check route
+            parameters: collect compose/only [ ; composes so that keep is defined here
+                matches: parse url (route)
+            ]
             if matches [
                 route_controller: first next routes_for_method
                 return reduce [route_controller parameters]
             ]
         ]
         return none
-    ]
-
-    check_if_url_matches_rule: funct [
-        url [string!]
-        converted_rule [block!]
-    ] [
-        parameters: collect compose/only [
-            matches: parse url (converted_rule)
-        ]
-        reduce [matches parameters]
     ]
 
     convert_rule_to_parse_rule: funct [
