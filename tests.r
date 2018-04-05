@@ -36,6 +36,7 @@ routing/get_routes reduce [routes_str1]
 ; checks route with no parameters
 req1: make request_obj [method: "GET" url: "/route_test"]
 req1_results: routing/find_route req1
+probe req1_results
 assert [
     req1_results/1 == copy "FirstController@index"
     req1_results/2 == copy []
