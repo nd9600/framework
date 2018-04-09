@@ -83,16 +83,6 @@ routing: make object! [
     ] [
         route_method: request/method
         request_url: request/url
-
-        if (not find accepted_route_methods route_method) [
-            print rejoin [route_method " is not an accepted route method. Only " accepted_route_methods " are accepted"]
-            return none
-        ]
-
-        if (empty? routes) [
-            print "'routes is empty"
-            return none
-        ]
         
         ; first checks against "ANY" routes, then the specific route method
         ANY_methods_routes: select routes "ANY"
