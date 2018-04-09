@@ -10,7 +10,7 @@ makeRequest: funct [
     relative_path: "/public/index.html"
 
     ; parses the HTTP header and copies the requested relative_path to a variable
-    ;  /public/ is mapped to /public/index.html
+    ; http, / and /public/ are rewritten to /public/index.html
     parse buffer [
         [
             copy method routing/route_methods_rule
