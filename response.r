@@ -14,12 +14,11 @@ errors: [
 ]
 
 sendError: funct [
-    statusCode [integer!]
-    errorDescription
+    response [object!]
 ] [
-    err: find errors statusCode
+    err: find errors response/status
     insert http-port rejoin ["HTTP/1.0 "
-        statusCode " " err/2 "^/Content-type: text/html^/^/"
+        response/status " " err/2 "^/Content-type: text/html^/^/"
         <html> 
         <head>
             <title> err/2 </title>
@@ -27,37 +26,33 @@ sendError: funct [
         <body>
             <h1> "Server error" </h1> <br />
             <p> "REBOL Webserver Error:" </p> <br /> 
-            <p> err/3 "  " <pre>errorDescription</pre> </p> 
+            <p> err/3 "  " <pre> response/data </pre> </p> 
         </body> 
         </html>
     ]
 ]
 
 sendRedirection: funct [
-    statusCode [integer!]
-    mime [string!]
-    data [string! binary!]
+    response [object!]
 ] [
-    sendSuccess statusCode mime data
+    sendSuccess response
 ]
 
 sendSuccess: funct [
-    statusCode [integer!]
-    mime [string!]
-    data [string! binary!]
+    response [object!]
 ] [
-    insert data rejoin ["HTTP/1.0 " statusCode " OK^/Content-type: " mime "^/^/"]
-    write-io http-port data length? data
+    insert response/data rejoin ["HTTP/1.0 " response/status " OK^/Content-type: " response/mime "^/^/"]
+    write-io http-port response/data length? response/data
 ]
 
 sendResponse: funct [
     response [object!]
 ] [
     case [
-        find errorCodes response/status [sendError response/status response/data]
-        find redirectionCodes response/status [sendSuccess response/status response/mime response/data]
-        find successCodes response/status [sendSuccess response/status response/mime response/data]
-        true [sendError response/status response/data]
+        find errorCodes response/status [sendError response]
+        find redirectionCodes response/status [sendSuccess response]
+        find successCodes response/status [sendSuccess response]
+        true [sendError response]
     ]
 ]
 
