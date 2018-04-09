@@ -19,6 +19,8 @@ do %routing/routing.r
 ;brings in the templating functions into an object called 'templater
 do %views/templater.r
 
+do %response.r
+
 ;stops the framework if a test fails
 do %tests.r
 
@@ -32,34 +34,6 @@ print rejoin ["^/listening on port " config/port]
 routing/get_routes config/route_files
 
 routing/print_routes
-
-errors: [
-    400 "Forbidden" "No permission to access: "
-    404 "Not Found" "Controller not found for: "
-    500 "Internal server error" "Error: "
-]
-
-send-error: funct [errNumber errDescription] [
-    err: find errors errNumber
-    insert http-port join "HTTP/1.0 " [
-        errNumber " " err/2 "^/Content-type: text/html^/^/"
-        <html> 
-        <head>
-            <title> err/2 </title>
-        </head>
-        <body>
-            <h1> "Server error" </h1> <br />
-            <p> "REBOL Webserver Error:" </p> <br /> 
-            <p> err/3 "  " <pre>errDescription</pre> </p> 
-        </body> 
-        </html>
-    ]
-]
-
-send-page: func [data mime] [
-    insert data rejoin ["HTTP/1.0 200 OK^/Content-type: " mime "^/^/"]
-    write-io http-port data length? data
-]
 
 ; holds the request information which is printed out as connections are made
 buffer: make string! 1024  ; will auto-expand if needed
@@ -105,12 +79,14 @@ forever [
             query_parameters: (parsed_query_parameters)
         ]
 
-        print "request is"
-        probe request
+        print rejoin ["request: [" newline request "]" newline]
                      
         route_results: routing/find_route request
         either (none? route_results) [
-            send-error 404 relative_path
+            sendResponse make response_obj compose [
+                status: 404
+                data: (relative_path)
+            ]
         ] [
             print append copy "route_results are: " mold route_results  
             route: parse route_results/1 "@"
@@ -118,7 +94,10 @@ forever [
             ; return an error if the controller is invalid
             either (equal? length? route 1) [
                 print rejoin ["^"" route "^"" " is an incorrect controller"]
-                send-error 500 rejoin ["^"" route "^"" " is an incorrect controller"]
+                sendResponse make response_obj compose [
+                    status: 500 
+                    data: (rejoin ["^"" route "^"" " is an incorrect controller"])
+                ]
             ] [
             
                 route_parameters: route_results/2
@@ -126,8 +105,8 @@ forever [
                 controller_function_name: copy route/2
                 controller_function: to-word controller_function_name
 
-                print rejoin ["route is: " mold route  ]
-                print rejoin ["route_parameters are: " mold route_parameters]
+                print rejoin ["route: " mold route  ]
+                print rejoin ["route_parameters: " mold route_parameters]
 
                 ; execute the wanted function from the controller file
                 controller_path: config/controllers_dir/:controller_name
@@ -159,9 +138,16 @@ forever [
                         ;data: read/binary config/public_dir/:relative_path
                         data: copy controller_output
                     ] [
-                        send-error 400 relative_path
+                        sendResponse make response_obj compose [
+                            status: 400 
+                            data: (relative_path)
+                        ]
                     ]
-                    send-page data mime
+                    sendResponse make response_obj compose [
+                        status: 200 
+                        mime: (mime)
+                        data: (data)
+                    ]
                 ]
 
                 ; makes sure that the connection from the browser is closed, now that the requested web data has been returned.
@@ -177,7 +163,10 @@ forever [
 
         print rejoin [newline "#####"]
         print rejoin ["error: " str_error]
-        send-error 500 str_error
+        sendResponse make response_obj compose [
+            status: 500 
+            data: (str_error)
+        ]
     ]
     close http-port
 ]

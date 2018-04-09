@@ -2,6 +2,20 @@ Rebol [
     Title: "Tiny Framework - helper functions"
 ]
 
+flatten: funct[b][
+    flattened: copy []
+    while [not tail? b] [
+        element: first b
+        either block? element [
+            append flattened flatten element
+        ] [
+            append flattened element
+        ]
+        b: next b
+    ]
+    flattened
+]
+
 parse_query_string: funct [
     "Parses a string string, returning a map"
     query_string [string!]
@@ -10,9 +24,10 @@ parse_query_string: funct [
 
     ; puts the values in a block, so they don't conflict with the keys
     parameters: f_map lambda [
-        b: parse ? "="
-        compose/deep/only [(to-word b/1) [(b/2)]]
+        paramPair: parse ? "="
+        compose [(to-word paramPair/1) (paramPair/2)]
     ] pairs
+    flatten parameters
     ;to-hash parameters ; makes many accesses of a large block faster
 ]
 
