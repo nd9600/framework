@@ -15,3 +15,21 @@ parse_query_string: funct [
     ] pairs
     ;to-hash parameters ; makes many accesses of a large block faster
 ]
+
+block_to_string: funct [
+    b [block!]
+] [
+    rejoin [f_map lambda [append to-string ? "^/"] b]
+]
+
+object_to_string: funct [
+    obj [object!]
+] [
+    words: words-of obj
+    values: values-of obj
+    str: copy ""
+    repeat i length? words [
+        append str rejoin [words/(i) ": " values/(i) "^/"]
+    ]
+    str
+]

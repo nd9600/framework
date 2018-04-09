@@ -12,8 +12,8 @@ param_test: func [
 ] [
     template: templater/t_load "first.twig.html"
     variables: make map! reduce [
-        ;'parameter parameters/1
-        'parameter request/query_parameters/a
+        'parameter parameters/1
+        ;'parameter request/query_parameters/a
     ]
     
     return templater/compile template variables

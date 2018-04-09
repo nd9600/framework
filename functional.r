@@ -7,13 +7,28 @@ Rebol [
 ;apply: function [f args][do append copy [f] args]
 ;apply: function [f args][do compose [f (args)] ]
 
-lambda: func [
+lambda: funct [
     "makes lambda functions - https://gist.github.com/draegtun/11b0258377a3b49bfd9dc91c3a1c8c3d"
     block [block!] "the function to make"
 ] [
-    spec: make block! 0
+    flatten: funct[b][
+        flattened: copy []
+        while [not tail? b] [
+            element: first b
+            either block? element [
+                append flattened flatten element
+            ] [
+                append flattened element
+            ]
+            b: next b
+        ]
+        flattened
+    ]
 
-    parse block [
+    spec: make block! 0
+    flattenedBlock: flatten block
+
+    parse flattenedBlock [
         any [
             set word word! (
                 if (strict-equal? first to-string word #"?") [
@@ -36,20 +51,21 @@ lambda: func [
     func spec block
 ]
 
-f_map: func [
+f_map: funct [
     "The functional map"
     f  [any-function!] "the function to use" 
     block [block!] "the block to reduce"
 ] [
-    result: copy block
-    while [not tail? result] [
-        replacement: f first result
-        result: change/part result replacement 1
+    result: copy []
+    while [not tail? block] [
+        replacement: f first block
+        append/only result replacement
+        block: next block
     ]   
-    head result
+    result
 ]
 
-f_fold: func [
+f_fold: funct [
     "The functional left fold"
     f  [any-function!] "the function to use" 
     init [any-type!] "the initial value"
@@ -63,7 +79,7 @@ f_fold: func [
     result
 ]
 
-f_filter: func [
+f_filter: funct [
     "The functional filter"
     condition [function!] "the condition to check, as a lambda function" 
     block [block!] "the block to fold"

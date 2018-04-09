@@ -24,12 +24,12 @@ routing: make object! [
                 ]
             ]
         ]
-        prin "##########"
+        print "##########"
     ]
 
     get_routes: func [
         "gets the app's routes"
-        routes_to_load [block!] "the routes to load, containing files or strings"
+        route_files_to_load [block!] "the routes to load, containing files or strings"
         /local current-dir temp_routes
     ] [
         ;changes to the directory where routes are defined first, then changes back after finding the route
@@ -43,32 +43,31 @@ routing: make object! [
         unconverted_routes: copy/deep routes
 
         ; loads the data for each routing file
-        routes_to_load: f_map :load routes_to_load
+        loaded_route_files: f_map lambda [context load ?] route_files_to_load
 
         ; loops through every routing file
-        forall routes_to_load [
-            ; if the current variable is called routes, add its content to the routes hashmap
-            if (equal? first routes_to_load 'routes) [
-                routes_from_this_file: first next routes_to_load
-                foreach actual_route routes_from_this_file [
+        foreach route_file loaded_route_files [
+            ; if add the content of 'routes to the routes hashmap
+            routes_from_this_file: route_file/routes
 
-                    ; if the route_method is ANY, GET or POST, add it to the appropriate series
-                    ; otherwise, add it to the GET series
-                    route_method: select actual_route 'method
-                    if (not find accepted_route_methods route_method) [
-                        route_method: "GET"
-                    ]
-                    route_url: select actual_route 'url
-                    route_rule: convert_rule_to_parse_rule route_url
-                    route_controller: select actual_route 'controller
-                    
-                    ; adds the route to the appropriate block in 'routes
-                    routes_for_method: select routes route_method
-                    append routes_for_method reduce [route_rule route_controller]
+            foreach actual_route routes_from_this_file [
 
-                    unconverted_routes_for_method: select unconverted_routes route_method
-                    append unconverted_routes_for_method reduce [route_url route_controller]
+                ; if the route_method is ANY, GET or POST, add it to the appropriate series
+                ; otherwise, add it to the GET series
+                route_method: select actual_route 'method
+                if (not find accepted_route_methods route_method) [
+                    route_method: "GET"
                 ]
+                route_url: select actual_route 'url
+                route_rule: convert_rule_to_parse_rule route_url
+                route_controller: select actual_route 'controller
+                
+                ; adds the route to the appropriate block in 'routes
+                routes_for_method: select routes route_method
+                append routes_for_method reduce [route_rule route_controller]
+
+                unconverted_routes_for_method: select unconverted_routes route_method
+                append unconverted_routes_for_method reduce [route_url route_controller]
             ]
         ]
 
@@ -89,6 +88,7 @@ routing: make object! [
             print rejoin [route_method " is not an accepted route method. Only " accepted_route_methods " are accepted"]
             return none
         ]
+
         if (empty? routes) [
             print "'routes is empty"
             return none
@@ -113,6 +113,7 @@ routing: make object! [
     ] [
         forskip routes 2 [
             route: first routes
+            ; collect returns a block of parameters, parse returns whether a match was found
             parameters: collect compose/only [ ; composes so that keep is defined here
                 matches: parse url (route)
             ]
