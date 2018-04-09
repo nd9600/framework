@@ -7,8 +7,9 @@ redirectionCodes: copy [300 301 307 308]
 successCodes: copy [200 201 202]
 
 errors: [
-    400 "Forbidden" "No permission to access: "
-    404 "Not Found" "Controller not found for: "
+    400 "Bad request" "Request: "
+    403 "Forbidden" "No permission to access: "
+    404 "Not found" "File not found: "
     500 "Internal server error" "Error: "
 ]
 
@@ -17,7 +18,7 @@ sendError: funct [
     errorDescription
 ] [
     err: find errors statusCode
-    insert http-port join "HTTP/1.0 " [
+    insert http-port rejoin ["HTTP/1.0 "
         statusCode " " err/2 "^/Content-type: text/html^/^/"
         <html> 
         <head>
@@ -35,7 +36,7 @@ sendError: funct [
 sendRedirection: funct [
     statusCode [integer!]
     mime [string!]
-    data [string!]
+    data [binary!]
 ] [
     sendSuccess statusCode mime data
 ]
@@ -43,7 +44,7 @@ sendRedirection: funct [
 sendSuccess: funct [
     statusCode [integer!]
     mime [string!]
-    data [string!]
+    data [binary!]
 ] [
     insert data rejoin ["HTTP/1.0 " statusCode " OK^/Content-type: " mime "^/^/"]
     write-io http-port data length? data
@@ -56,7 +57,7 @@ sendResponse: funct [
         find errorCodes response/status [sendError response/status response/data]
         find redirectionCodes response/status [sendSuccess response/status response/mime response/data]
         find successCodes response/status [sendSuccess response/status response/mime response/data]
-        true [sendSuccess response/status response/mime response/data]
+        true [sendError response/status response/data]
     ]
 ]
 

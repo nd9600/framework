@@ -2,7 +2,19 @@ Rebol [
     Title: "Tiny Framework - helper functions"
 ]
 
-flatten: funct[b][
+startsWith: funct [
+    "returns whether 'series starts with 'value"
+    series [series!]
+    value [any-type!]
+] [
+    match: find series value
+    either all [found? match head? match] [true] [false]
+]
+
+flatten: funct[
+    b [block!]
+] [
+    "flattens a block"
     flattened: copy []
     while [not tail? b] [
         element: first b
@@ -31,13 +43,13 @@ parse_query_string: funct [
     ;to-hash parameters ; makes many accesses of a large block faster
 ]
 
-block_to_string: funct [
+blockToString: funct [
     b [block!]
 ] [
     rejoin [f_map lambda [append to-string ? "^/"] b]
 ]
 
-object_to_string: funct [
+objectToString: funct [
     obj [object!]
 ] [
     words: words-of obj
@@ -47,4 +59,29 @@ object_to_string: funct [
         append str rejoin [words/(i) ": " values/(i) "^/"]
     ]
     str
+]
+
+errorToString: funct [
+    "adds the actual error string to the error so you can read it easily"
+    error [object!]
+] [
+    errorIDBlock: get error/id
+    errorBlock: context [
+        arg1: error/arg1
+        arg2: error/arg2
+        arg3: error/arg3
+        usefulError: bind errorIDBlock 'arg1
+    ]
+
+    ; adds a space in between each thing
+    usefulErrorBlock: errorBlock/usefulError
+    loop length? usefulErrorBlock [usefulErrorBlock: insert next usefulErrorBlock copy " "]
+    usefulErrorString: rejoin head usefulErrorBlock
+
+    fieldsWeWant: context [
+        near: error/near
+        where: error/where
+    ]
+
+    rejoin [usefulErrorString newline newline objectToString fieldsWeWant]
 ]
