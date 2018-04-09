@@ -74,7 +74,7 @@ errorToString: funct [
     ]
 
     ; adds a space in between each thing
-    usefulErrorBlock: errorBlock/usefulError
+    usefulErrorBlock: copy errorBlock/usefulError
     loop length? usefulErrorBlock [usefulErrorBlock: insert next usefulErrorBlock copy " "]
     usefulErrorString: rejoin head usefulErrorBlock
 

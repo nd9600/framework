@@ -8,7 +8,9 @@ makeRequest: funct [
 ] [
     query_string: copy ""
     relative_path: "/public/index.html"
-    ; parses the HTTP header and copies the requested relative_path to a variable. This is a very simple method, but it will work fine for simple web server requests.
+
+    ; parses the HTTP header and copies the requested relative_path to a variable
+    ;  /public/ is mapped to /public/index.html
     parse buffer [
         [
             copy method routing/route_methods_rule
@@ -16,6 +18,7 @@ makeRequest: funct [
         [
             "http"
             | "/ "
+            | "/public/" "HTTP"
             | copy relative_path to "?"
               skip copy query_string to " "
             | copy relative_path to " "
@@ -35,7 +38,7 @@ handleRequest: funct [
     request [object!]
 ] [
     ; the / is needed because the url starts with a / too
-    either startsWith request/url rejoin ["/" to-string config/public_dir] [
+    either startsWith request/url "/public/" [
         handlePublicRequest request
     ] [
         handleControllerRequest request
@@ -45,8 +48,9 @@ handleRequest: funct [
 handlePublicRequest: funct [
     request [object!]
 ] [
-    ; the url has "public/" at the start
-    relative_path: find/tail request/url "public"
+    ; the url has the punlic_dir path at the start
+    relative_path: find/tail request/url "public/"
+
 
     ; check that the requested file exists, read the file and send it to the browser
     any [
@@ -133,12 +137,13 @@ handleControllerRequest: funct [
 getMimeType: funct [
     relative_path [string!]
 ] [
-    ; takes the relative_path's suffix and uses it to lookup the MIME type. This is returned to the web browser to tell it what to do with the data. For example, if the file is foo.html, then a text/html MIME type is returned. You can add other MIME types to this list.
     mime: "text/plain"
     parse relative_path [
         thru "."
         [
             "html" (mime: "text/html")
+            | "css" (mime: "text/css")
+            | "js" (mime: "text/javascript")
             | "gif"  (mime: "image/gif")
             | "jpg"  (mime: "image/jpeg")
         ]

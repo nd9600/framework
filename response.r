@@ -36,7 +36,7 @@ sendError: funct [
 sendRedirection: funct [
     statusCode [integer!]
     mime [string!]
-    data [binary!]
+    data [string! binary!]
 ] [
     sendSuccess statusCode mime data
 ]
@@ -44,7 +44,7 @@ sendRedirection: funct [
 sendSuccess: funct [
     statusCode [integer!]
     mime [string!]
-    data [binary!]
+    data [string! binary!]
 ] [
     insert data rejoin ["HTTP/1.0 " statusCode " OK^/Content-type: " mime "^/^/"]
     write-io http-port data length? data
