@@ -6,8 +6,8 @@ Rebol [
 config: make object! [
     port: 8000
 
-    public_dir: %public/
-    public_prefix: "/public2/"
+    public_dir: %../../site/
+    public_prefix: "/public/"
 
     routing_dir: %routing/
     route_files: [%routes.r]
