@@ -18,7 +18,7 @@ makeRequest: funct [
         [
             "http"
             | "/ "
-            | "/public/" "HTTP"
+            | config/public_prefix "HTTP"
             | copy relative_path to "?"
               skip copy query_string to " "
             | copy relative_path to " "
@@ -38,7 +38,7 @@ handleRequest: funct [
     request [object!]
 ] [
     ; the / is needed because the url starts with a / too
-    either startsWith request/url "/public/" [
+    either startsWith request/url config/public_prefix [
         handlePublicRequest request
     ] [
         handleControllerRequest request
@@ -48,8 +48,8 @@ handleRequest: funct [
 handlePublicRequest: funct [
     request [object!]
 ] [
-    ; the url has the punlic_dir path at the start
-    relative_path: find/tail request/url "public/"
+    ; the url has the public_prefix at the start
+    relative_path: find/tail request/url config/public_prefix
 
 
     ; check that the requested file exists, read the file and send it to the browser
@@ -85,7 +85,7 @@ handleControllerRequest: funct [
     either (none? route_results) [
         return make response_obj compose [
             status: 404
-            data: (request/url)
+            data: (rejoin ["There were no routes found for: " request/url])
         ]
     ] [
         print append copy "route_results are: " mold route_results  
@@ -93,10 +93,11 @@ handleControllerRequest: funct [
         
         ; return an error if the controller is invalid
         either (equal? length? route 1) [
-            print rejoin ["^"" route "^"" " is an incorrect controller"]
+            error_message: copy rejoin [route " is an incorrect controller"]
+            print error_message
             return make response_obj compose [
                 status: 500 
-                data: (rejoin ["^"" route "^"" " is an incorrect controller"])
+                data: (error_message)
             ]
         ] [
         

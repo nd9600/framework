@@ -6,7 +6,7 @@ templater: make object! [
     t_load: func [
         template_name ["string!"] "the template.path"
     ] [
-        read append copy %views/ template_name
+        read config/templates_dir/:template_name
     ]
 
     compile: func [

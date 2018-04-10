@@ -4,24 +4,24 @@ Rebol [
 ]
 
 ;brings in the base FP functions
-do %functional.r
+do %base/functional.r
 
-do %data_structures.r
+do %base/data_structures.r
 
-do %helpers.r
+do %base/helpers.r
 
 ;brings in the config into an object called 'config
 do %config.r
 
 ;brings in the routing functions into an object called 'routing
-do %routing/routing.r
+do %base/routing.r
 
 ;brings in the templating functions into an object called 'templater
-do %views/templater.r
+do %base/templater.r
 
-do %request.r
+do %base/request.r
 
-do %response.r
+do %base/response.r
 
 ;stops the framework if a test fails
 do %tests.r
