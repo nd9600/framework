@@ -3,6 +3,8 @@ Rebol [
 ]
 
 ; to access the public_dir, start the url with /public/
+; 'public_prefix must have a / at the end
+; file!s don't need to have one
 config: make object! [
     port: 8000
 

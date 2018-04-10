@@ -37,9 +37,6 @@ makeRequest: funct [
 handleRequest: funct [
     request [object!]
 ] [
-    ; the / is needed because the url starts with a / too
-    probe request/url
-    probe config/public_prefix
     either startsWith request/url config/public_prefix [
         handlePublicRequest request
     ] [
