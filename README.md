@@ -1,4 +1,5 @@
-# My cross-platform web framework, in less than 50kb, written in Rebol - it'll be rewritten in Red once Red gets full IO support
+# My <50kb web framework
+## Cross-platform, written in Rebol - it'll be rewritten in Red once Red gets full IO support
 
 To use it:
 1. Download Rebol from http://www.rebol.com/downloads.html - only the Core version is needed
