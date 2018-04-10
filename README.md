@@ -7,7 +7,9 @@ To use it:
 
 That's it. You can change the configuration in `config.r`, but by default, it:
 * runs on port 8000
-* serves files straight from the `storage/public/` directory
-* uses controllers from the `controllers/` folder 
 * uses routes from the `routing/` directory, and
 * loads routes from a `routes.r` file - you can add more, or even use strings if you want
+* uses controllers from the `controllers/` folder 
+* uses templates from the `templates/` folder
+* can store and access files from the `storage/` folder
+* serves files straight from the `storage/public/` directory, if a request URL starts with `/public/`
