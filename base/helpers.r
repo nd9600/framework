@@ -49,6 +49,15 @@ blockToString: funct [
     rejoin [f_map lambda [append to-string ? "^/"] b]
 ]
 
+sep_join: funct [
+    "Returns a reduced block of values as a string, separated by a separator"
+    block [block!]
+    sep [string! char!]
+] [
+    rejoin compose/only flatten 
+        f_map lambda [reduce [? copy (sep)]] block
+]
+
 objectToString: funct [
     obj [object!]
 ] [
