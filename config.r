@@ -8,12 +8,14 @@ Rebol [
 config: make object! [
     port: 8000
 
-    public_dir: %../../site/
-    public_prefix: "/public/"
-
     routing_dir: %routing/
     route_files: [%routes.r]
 
     controllers_dir: %controllers/
     templates_dir: %templates/    
+
+    storage_dir: %storage/
+
+    public_dir: %storage/public/
+    public_prefix: "/public/"
 ]
