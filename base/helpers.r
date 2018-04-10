@@ -70,13 +70,12 @@ errorToString: funct [
         arg1: error/arg1
         arg2: error/arg2
         arg3: error/arg3
-        usefulError: bind errorIDBlock 'arg1
+        usefulError: to-block bind 'errorIDBlock 'arg1
     ]
 
     ; adds a space in between each thing
     usefulErrorBlock: copy errorBlock/usefulError
-    loop length? usefulErrorBlock [usefulErrorBlock: insert next usefulErrorBlock copy " "]
-    usefulErrorString: rejoin head usefulErrorBlock
+    usefulErrorString: reform usefulErrorBlock
 
     fieldsWeWant: context [
         near: error/near
