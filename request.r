@@ -69,7 +69,6 @@ handlePublicRequest: funct [
                 mime: (mime)
                 data: (data)
             ]
-
         ] [
             return make response_obj compose [
                 status: 400 
