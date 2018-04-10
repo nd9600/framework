@@ -7,7 +7,7 @@ makeRequest: funct [
     buffer [string!]
 ] [
     query_string: copy ""
-    relative_path: "/public/index.html"
+    relative_path: append copy config/public_prefix "index.html"
 
     ; parses the HTTP header and copies the requested relative_path to a variable
     ; http, / and /public/ are rewritten to /public/index.html
@@ -38,6 +38,8 @@ handleRequest: funct [
     request [object!]
 ] [
     ; the / is needed because the url starts with a / too
+    probe request/url
+    probe config/public_prefix
     either startsWith request/url config/public_prefix [
         handlePublicRequest request
     ] [
