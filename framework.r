@@ -10,14 +10,11 @@ do %base/data_structures.r
 
 do %base/helpers.r
 
-;brings in the config into an object called 'config
-do %config.r
+config: context load %config.r
 
-;brings in the routing functions into an object called 'routing
-do %base/routing.r
+routing: context load %base/routing.r
 
-;brings in the templating functions into an object called 'templater
-do %base/templater.r
+templater: context load %base/templater.r
 
 do %base/request.r
 
