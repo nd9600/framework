@@ -33,7 +33,7 @@ listen_port: open/lines append tcp://: config/port  ; port used for web connecti
 print rejoin ["^/listening on port " config/port]
 
 ; set up the routes
-routing/get_routes config/route_files
+routing/get_routes config config/route_files
 
 routing/print_routes
 
@@ -56,10 +56,10 @@ forever [
         ]
         repend buffer ["Address: " http-port/host newline]
         
-        request: makeRequest buffer
+        request: makeRequest config buffer
         print rejoin ["request: [" newline request "]" newline]
                      
-        response: handleRequest request
+        response: handleRequest config routing request
         sendResponse response
 
         ; block must return something so we can 'try it

@@ -29,6 +29,7 @@ routing: make object! [
 
     get_routes: func [
         "gets the app's routes"
+        config [object!]
         route_files_to_load [block!] "the routes to load, containing files or strings"
         /local current-dir temp_routes
     ] [

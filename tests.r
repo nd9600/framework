@@ -31,7 +31,7 @@ routes: [
 ]
 }
 
-routing/get_routes reduce [routes_str1]
+routing/get_routes config reduce [routes_str1]
 
 ; checks route with no parameters
 req1: make request_obj [method: "GET" url: "/route_test"]

@@ -4,6 +4,7 @@ Rebol [
 ]
 
 makeRequest: funct [
+    config [object!]
     buffer [string!]
 ] [
     query_string: copy ""
@@ -35,16 +36,19 @@ makeRequest: funct [
 ]
 
 handleRequest: funct [
+    config [object!]
+    routing [object!]
     request [object!]
 ] [
     either startsWith request/url config/public_prefix [
-        handlePublicRequest request
+        handlePublicRequest config request
     ] [
-        handleControllerRequest request
+        handleControllerRequest config routing request
     ]
 ]
 
 handlePublicRequest: funct [
+    config [object!]
     request [object!]
 ] [
     ; the url has the public_prefix at the start
@@ -78,6 +82,8 @@ handlePublicRequest: funct [
 ]
 
 handleControllerRequest: funct [
+    config [object!]
+    routing [object!]
     request [object!]
 ] [
     route_results: routing/find_route request
