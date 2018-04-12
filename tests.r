@@ -6,19 +6,17 @@ Rebol [
 ; test files are those that have end with "test.r"
 testFiles: findFiles/matching %tests/ lambda [endsWith ? "Test.r"]
 
-probe testFiles
 
-;runs all functions that start with test in testFiles
+; runs all functions that start with test in testFiles
+; runs setUp and tearDown functions before each test function, if they exist
 
 foreach testFile testFiles [
 
-    ; directories are included too
+    ; directories and wrong files are included too
+    probe testFile
     if all [not dir? testFile (".r" = suffix? testFile)] [
-        probe testFile
-        testFileContents: context load testFile
-        
-
-        ; wrong files are included too
+    probe testFile
+        testFileContents: context load testFile        
         if in testFileContents 'tests [
             testFileObject: testFileContents/tests
             words: copy words-of testFileObject
@@ -29,8 +27,6 @@ foreach testFile testFiles [
                 testFileObject/:functionToCall
                 if in testFileObject 'tearDown [testFileObject/tearDown]
             ] testFunctions
-
-            probe testFunctions
         ]
     ]
 ]
