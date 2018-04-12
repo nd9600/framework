@@ -18,12 +18,11 @@ foreach testFile testFiles [
     testFunctions: f_filter lambda [startsWith to-string ? testFunctionNamePrefix] wordsInTestFile
 
     ; actually call each test function; we don't care about the results
-    testResults: f_map lambda [
-        functionToCall: to-word ?
+    foreach testFunction testFunctions [
         if in testFileObject 'setUp [testFileObject/setUp]
-        testFileObject/:functionToCall
+        testFileObject/:testFunction
         if in testFileObject 'tearDown [testFileObject/tearDown]
-    ] testFunctions
+    ]
 ]
 
 print "all tests pass"
