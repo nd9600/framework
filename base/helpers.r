@@ -123,7 +123,15 @@ findFiles: funct [
 
     ; get files in sub-directories:
     foreach file files [
-        if find file "/" [append fileList findFiles dir/:file]
+        if find file "/" [
+
+            ; we have to pass the refinement into the recursive calls too
+            either matching [
+                append fileList findFiles/matching dir/:file :condition
+            ] [
+                append fileList findFiles dir/:file
+            ]
+        ]
     ]
     fileList
 ]
