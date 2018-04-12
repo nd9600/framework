@@ -8,8 +8,6 @@ Rebol [
 ;brings in the base FP functions
 do %base/functional.r
 
-do %base/data_structures.r
-
 do %base/helpers.r
 
 config: context load %config.r

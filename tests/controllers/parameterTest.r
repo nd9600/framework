@@ -1,14 +1,13 @@
 Rebol [
     Title: "Tiny Framework - controller parameter tests"
-    Documentation: http://www.rebol.net/cookbook/recipes/0057.html
 ]
 
 tests: context [
 
     config: routing: none
 
-    setup: func [] [
-        config: context load %config.r
+    setUp: func [] [
+        config: context load "routing_dir: %routing/"
 
         routing: context load %base/routing.r
         routes_str1: {
@@ -32,6 +31,10 @@ tests: context [
         }
 
         routing/get_routes config reduce [routes_str1]
+    ]
+
+    tearDown: func [] [
+        config: routing: none
     ]
 
     testGettingRouteWithNoParameters: funct [] [

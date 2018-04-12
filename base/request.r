@@ -3,6 +3,12 @@ Rebol [
     Documentation: http://www.rebol.net/cookbook/recipes/0057.html
 ]
 
+request_obj: context [
+    method: copy ""
+    url: copy ""
+    query_parameters: copy []
+]
+
 makeRequest: funct [
     config [object!]
     buffer [string!]

@@ -2,6 +2,12 @@ Rebol [
     Title: "Tiny Framework - response functions"
 ]
 
+response_obj: context [
+    status: 200,
+    mime: copy ""
+    data: copy ""
+]
+
 errorCodes: copy [400 401 403 404 405 500 503]
 redirectionCodes: copy [300 301 307 308]
 successCodes: copy [200 201 202]

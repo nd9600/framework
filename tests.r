@@ -16,12 +16,12 @@ foreach testFile testFiles [
     functions: copy words-of testFileObject
     testFunctions: f_filter lambda [startsWith to-string ? "test"] functions
     testResults: f_map lambda [
-        probe testFileObject
-        if in testFileObject 'setup [testFileObject/setup]
-        testFileObject/(to-word ?)
+        functionToCall: to-word ?
+        if in testFileObject 'setUp [testFileObject/setUp]
+        testFileObject/:functionToCall
+        if in testFileObject 'tearDown [testFileObject/tearDown]
     ] testFunctions
 
-    probe functions
     probe testFunctions
 ]
 
