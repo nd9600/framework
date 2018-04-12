@@ -32,7 +32,7 @@ get_routes: func [
     /local current-dir temp_routes
 ] [
     ;changes to the directory where routes are defined first, then changes back after finding the route
-    current-dir: system/options/path
+    currentDir: system/options/path
     change-dir config/routing_dir
 
     ; 'routes is a series like ["ANY" [] "GET" [] "POST" []]
@@ -74,7 +74,7 @@ get_routes: func [
     ;speeds up finding routes, but the initial creation is slower
     ;routes: to-map routes
 
-    change-dir current-dir
+    change-dir currentDir
 ]
 
 find_route: funct [

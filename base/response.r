@@ -21,9 +21,10 @@ errors: [
 
 sendError: funct [
     response [object!]
+    port [port!]
 ] [
     err: find errors response/status
-    insert http-port rejoin ["HTTP/1.0 "
+    errorResponse: rejoin ["HTTP/1.0 "
         response/status " " err/2 "^/Content-type: text/html^/^/"
         <html> 
         <head>
@@ -36,29 +37,35 @@ sendError: funct [
         </body> 
         </html>
     ]
+    if found? port [insert port errorResponse]
+    errorResponse
 ]
 
 sendRedirection: funct [
     response [object!]
+    port [port!]
 ] [
-    sendSuccess response
+    sendSuccess response port
 ]
 
 sendSuccess: funct [
     response [object!]
+    port [port!]
 ] [
     insert response/data rejoin ["HTTP/1.0 " response/status " OK^/Content-type: " response/mime "^/^/"]
-    write-io http-port response/data length? response/data
+    if found? port [write-io port response/data length? response/data]
+    response/data
 ]
 
 sendResponse: funct [
     response [object!]
+    port [port!]
 ] [
     case [
-        find errorCodes response/status [sendError response]
-        find redirectionCodes response/status [sendSuccess response]
-        find successCodes response/status [sendSuccess response]
-        true [sendError response]
+        find errorCodes response/status [sendError response port]
+        find redirectionCodes response/status [sendSuccess response port]
+        find successCodes response/status [sendSuccess response port]
+        true [sendError response port]
     ]
 ]
 
