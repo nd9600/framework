@@ -13,9 +13,7 @@ testFiles: findFiles/matching %tests/ lambda [endsWith ? "Test.r"]
 foreach testFile testFiles [
 
     ; directories and wrong files are included too
-    probe testFile
-    if all [not dir? testFile (".r" = suffix? testFile)] [
-    probe testFile
+    if all [not dir? testFile (%.r = suffix? testFile)] [
         testFileContents: context load testFile        
         if in testFileContents 'tests [
             testFileObject: testFileContents/tests
