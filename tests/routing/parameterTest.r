@@ -4,11 +4,9 @@ Rebol [
 
 tests: context [
 
-    config: routing: none
+    routing: none
 
     setUp: func [] [
-        config: context load "routing_dir: %routing/"
-
         routing: context load %base/routing.r
         routes_str1: {
         routes: [
@@ -30,11 +28,11 @@ tests: context [
         ]
         }
 
-        routing/get_routes config reduce [routes_str1]
+        routing/get_routes reduce [routes_str1]
     ]
 
     tearDown: func [] [
-        config: routing: none
+        routing: none
     ]
 
     testGettingRouteWithNoParameters: funct [] [

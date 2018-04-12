@@ -28,7 +28,8 @@ listenPort: open/lines append tcp://: config/port  ; port used for web connectio
 print rejoin ["^/listening on port " config/port]
 
 ; set up the routes
-routing/get_routes config config/route_files
+routeFilesLocations: copy f_map lambda [append copy config/routing_dir ?] config/route_files
+routing/get_routes routeFilesLocations
 
 routing/print_routes
 

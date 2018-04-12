@@ -8,8 +8,10 @@ tests: context [
 
     setUp: func [] [
         config: context load {
-            public_dir: %tests/storage/public/ 
+            public_dir: %tests/needed_data/storage/public/ 
             public_prefix: "/public/"
+            routing_dir: %routing/
+            controllers_dir: %tests/needed_data/controllers
         }
     ]
 

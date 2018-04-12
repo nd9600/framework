@@ -65,7 +65,7 @@ handlePublicRequest: funct [
         if not exists? config/public_dir/:relative_path [
             return make response_obj compose [
                 status: 404
-                data: (relative_path)
+                data: (request/url)
             ]
         ]
         if error? try [
@@ -80,7 +80,7 @@ handlePublicRequest: funct [
         ] [
             return make response_obj compose [
                 status: 400 
-                data: (relative_path)
+                data: (request/url)
             ]
         ]
     ]
@@ -95,16 +95,16 @@ handleControllerRequest: funct [
     either (none? route_results) [
         return make response_obj compose [
             status: 404
-            data: (rejoin ["There were no routes found for: " request/url])
+            data: (reform ["There were no routes found for:" request/url])
         ]
     ] [
-        print append copy "route_results are: " mold route_results  
+        ;print append copy "route_results are: " mold route_results  
         route: parse route_results/1 "@"
-        
+
         ; return an error if the controller is invalid
         either (equal? length? route 1) [
-            error_message: copy rejoin [route " is an incorrect controller"]
-            print error_message
+            error_message: copy reform [route "is an invalid controller-method pair"]
+            ;print error_message
             return make response_obj compose [
                 status: 500 
                 data: (error_message)
@@ -116,8 +116,8 @@ handleControllerRequest: funct [
             controller_function_name: copy route/2
             controller_function: to-word controller_function_name
 
-            print rejoin ["route: " mold route  ]
-            print rejoin ["route_parameters: " mold route_parameters]
+            ;print rejoin ["route: " mold route  ]
+            ;print rejoin ["route_parameters: " mold route_parameters]
 
             ; execute the wanted function from the controller file
             controller_path: config/controllers_dir/:controller_name

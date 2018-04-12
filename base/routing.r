@@ -27,19 +27,14 @@ print_routes: funct [
 
 get_routes: func [
     "gets the app's routes"
-    config [object!]
     route_files_to_load [block!] "the routes to load, containing files or strings"
-    /local current-dir temp_routes
+    /local tempRoutes
 ] [
-    ;changes to the directory where routes are defined first, then changes back after finding the route
-    currentDir: system/options/path
-    change-dir config/routing_dir
-
-    ; 'routes is a series like ["ANY" [] "GET" [] "POST" []]
-    temp_routes: copy/deep accepted_route_methods
-    loop length? temp_routes [temp_routes: insert/only next temp_routes copy []]
+    ; 'routes is a series like ["ANY" [] "GET" [] "POST" []] after this
+    tempRoutes: copy/deep accepted_route_methods
+    loop length? tempRoutes [tempRoutes: insert/only next tempRoutes copy []]
     routes: copy []
-    routes: head temp_routes
+    routes: head tempRoutes
     unconverted_routes: copy/deep routes
 
     ; loads the data for each routing file
@@ -73,8 +68,6 @@ get_routes: func [
 
     ;speeds up finding routes, but the initial creation is slower
     ;routes: to-map routes
-
-    change-dir currentDir
 ]
 
 find_route: funct [
