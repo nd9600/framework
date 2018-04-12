@@ -12,9 +12,14 @@ probe testFiles
 
 foreach testFile testFiles [
     testFileContents: context load testFile
-    functions: copy words-of testFileContents
+    testFileObject: testFileContents/tests
+    functions: copy words-of testFileObject
     testFunctions: f_filter lambda [startsWith to-string ? "test"] functions
-    testResults: f_map lambda [do get in testFileContents to-word ?] testFunctions
+    testResults: f_map lambda [
+        probe testFileObject
+        if in testFileObject 'setup [testFileObject/setup]
+        testFileObject/(to-word ?)
+    ] testFunctions
 
     probe functions
     probe testFunctions
