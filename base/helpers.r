@@ -11,6 +11,15 @@ startsWith: funct [
     either all [found? match head? match] [true] [false]
 ]
 
+endsWith: funct [
+    "returns whether 'series ends with 'value"
+    series [series!]
+    value [any-type!]
+] [
+    match: find/tail series value
+    either all [found? match tail? match] [true] [false]
+]
+
 flatten: funct[
     b [block!]
 ] [
@@ -92,4 +101,29 @@ errorToString: funct [
     ]
 
     rejoin [usefulErrorString newline newline objectToString fieldsWeWant]
+]
+
+findFiles: funct [
+    "find files in a directory (including sub-directories), optionally matching against a condition"
+    dir [file!]
+    /matching "only find files that match a condition"
+    condition [any-function!] "the condition files must match"
+] [
+    fileList: copy []
+    files: sort load dir
+
+    ; get files in this directory
+    foreach file files [
+        either matching [
+            if condition file [append fileList dir/:file]
+        ] [
+            append fileList dir/:file
+        ]
+    ]
+
+    ; get files in sub-directories:
+    foreach file files [
+        if find file "/" [append fileList findFiles dir/:file]
+    ]
+    fileList
 ]

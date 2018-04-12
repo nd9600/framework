@@ -3,58 +3,21 @@ Rebol [
     Documentation: http://www.rebol.net/cookbook/recipes/0057.html
 ]
 
-;runs all functions that start with test in %file
-;functions: copy words-of %file
-;test_functions: f_filter lambda [
-;    test_match: find to-string ? "test" 
-;    all [found? test_match head? test_match]
-;] w
-;test_results: f_map lambda [do get in abc to-word ?] test_functions
+; test files are those that have end with "test.r"
+testFiles: findFiles/matching %tests/ lambda [endsWith ? "Test.r"]
 
-routes_str1: {
-routes: [
-    [
-        url "/route_test" 
-        method "GET"
-        controller "FirstController@index"
-    ]
-    [
-        url "/route_test/{parameter}"
-        method "GET"
-        controller "FirstController@param_test"
-    ]
-    [
-        url "/route_test/{p1}/{p2}" 
-        method "POST"
-        controller "FirstController@param_test2"
-    ]
-]
-}
+probe testFiles
 
-routing/get_routes config reduce [routes_str1]
+;runs all functions that start with test in testFiles
 
-; checks route with no parameters
-req1: make request_obj [method: "GET" url: "/route_test"]
-req1_results: routing/find_route req1
-assert [
-    req1_results/1 == copy "FirstController@index"
-    req1_results/2 == copy []
-]
+foreach testFile testFiles [
+    testFileContents: context load testFile
+    functions: copy words-of testFileContents
+    testFunctions: f_filter lambda [startsWith to-string ? "test"] functions
+    testResults: f_map lambda [do get in testFileContents to-word ?] testFunctions
 
-; checks route with one parameter
-req2: make request_obj [method: "GET" url: "/route_test/123"]
-req2_results: routing/find_route req2
-assert [
-    req2_results/1 == "FirstController@param_test"
-    req2_results/2 == ["123"]
-]
-
-; checks route with two parameters
-req3: make request_obj [method: "POST" url: "/route_test/123/456"]
-req3_results: routing/find_route req3
-assert [
-    req3_results/1 == "FirstController@param_test2"
-    req3_results/2 == ["123" "456"]
+    probe functions
+    probe testFunctions
 ]
 
 print "all tests pass"
