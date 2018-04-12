@@ -60,7 +60,6 @@ handlePublicRequest: funct [
     ; the url has the public_prefix at the start
     relative_path: find/tail request/url config/public_prefix
 
-
     ; check that the requested file exists, read the file and send it to the browser
     any [
         if not exists? config/public_dir/:relative_path [
