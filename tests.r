@@ -11,18 +11,28 @@ probe testFiles
 ;runs all functions that start with test in testFiles
 
 foreach testFile testFiles [
-    testFileContents: context load testFile
-    testFileObject: testFileContents/tests
-    functions: copy words-of testFileObject
-    testFunctions: f_filter lambda [startsWith to-string ? "test"] functions
-    testResults: f_map lambda [
-        functionToCall: to-word ?
-        if in testFileObject 'setUp [testFileObject/setUp]
-        testFileObject/:functionToCall
-        if in testFileObject 'tearDown [testFileObject/tearDown]
-    ] testFunctions
 
-    probe testFunctions
+    ; directories are included too
+    if all [not dir? testFile (".r" = suffix? testFile)] [
+        probe testFile
+        testFileContents: context load testFile
+        
+
+        ; wrong files are included too
+        if in testFileContents 'tests [
+            testFileObject: testFileContents/tests
+            words: copy words-of testFileObject
+            testFunctions: f_filter lambda [startsWith to-string ? "test"] words
+            testResults: f_map lambda [
+                functionToCall: to-word ?
+                if in testFileObject 'setUp [testFileObject/setUp]
+                testFileObject/:functionToCall
+                if in testFileObject 'tearDown [testFileObject/tearDown]
+            ] testFunctions
+
+            probe testFunctions
+        ]
+    ]
 ]
 
 print "all tests pass"
