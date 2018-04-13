@@ -3,8 +3,6 @@ Rebol [
     Documentation: http://www.rebol.net/cookbook/recipes/0057.html
 ]
 
-;files: copy [] parse framework.r [any [thru 'do copy file file! (append files file) | thru 'context 'load copy file file! (append files file)] | to end]
-
 ;brings in the base FP functions
 do %base/functional.r
 

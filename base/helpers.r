@@ -114,14 +114,18 @@ findFiles: funct [
 
     ; get files in this directory
     foreach file files [
-        either matching [
-            if condition file [append fileList dir/:file]
-        ] [
-            append fileList dir/:file
+
+        ; so we don't add directories by accident
+        if not find file "/" [
+            either matching [
+                if condition file [append fileList dir/:file]
+            ] [
+                append fileList dir/:file
+            ]
         ]
     ]
 
-    ; get files in sub-directories:
+    ; get files in sub-directories
     foreach file files [
         if find file "/" [
 
