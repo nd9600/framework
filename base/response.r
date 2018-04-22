@@ -19,9 +19,8 @@ errors: [
     500 "Internal server error" "Error: "
 ]
 
-sendError: funct [
+makeError: funct [
     response [object!]
-    port [port!]
 ] [
     err: find errors response/status
     errorResponse: rejoin ["HTTP/1.0 "
@@ -33,40 +32,41 @@ sendError: funct [
         </head>
         <body>
             <h1> "Server error" </h1> <br />
-            <p> "REBOL Webserver Error:" </p> <br /> 
-            <p> err/3 "  " <pre> response/data </pre> </p> 
+            <p> "REBOL Webserver Error:" <br /> 
+                err/3 "  " <pre> response/data </pre> </p> 
         </body> 
         </html>
     ]
-    if found? port [insert port errorResponse]
     errorResponse
 ]
 
-sendRedirection: funct [
+makeRedirection: funct [
     response [object!]
-    port [port!]
 ] [
-    sendSuccess response port
+    sendSuccess response
 ]
 
-sendSuccess: funct [
+makeSuccess: funct [
     response [object!]
-    port [port!]
 ] [
     insert response/data rejoin ["HTTP/1.0 " response/status " OK^/Content-type: " response/mime "^/^/"]
-    if found? port [write-io port response/data length? response/data]
     response/data
+]
+
+makeResponse: funct [
+    response [object!]
+] [
+    case [
+        find errorCodes response/status [makeError response]
+        find redirectionCodes response/status [makeSuccess response]
+        find successCodes response/status [makeSuccess response]
+        true [makeError response]
+    ]
 ]
 
 sendResponse: funct [
     response [object!]
     port [port!]
 ] [
-    case [
-        find errorCodes response/status [sendError response port]
-        find redirectionCodes response/status [sendSuccess response port]
-        find successCodes response/status [sendSuccess response port]
-        true [sendError response port]
-    ]
+    if found? port [insert port (makeResponse response)]
 ]
-
