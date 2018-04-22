@@ -23,7 +23,7 @@ makeError: funct [
     response [object!]
 ] [
     err: find errors response/status
-    errorResponse: rejoin ["HTTP/1.0 "
+    rejoin ["HTTP/1.0 "
         response/status " " err/2 "^/Content-type: text/html^/^/"
         <html> 
         <head>
@@ -32,12 +32,13 @@ makeError: funct [
         </head>
         <body>
             <h1> "Server error" </h1> <br />
-            <p> "REBOL Webserver Error:" <br /> 
-                err/3 "  " <pre> response/data </pre> </p> 
+            <p> 
+                "REBOL Webserver Error:" <br /> 
+                err/3 "  " <pre> response/data </pre>
+            </p> 
         </body> 
         </html>
     ]
-    errorResponse
 ]
 
 makeRedirection: funct [
