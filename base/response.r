@@ -29,6 +29,7 @@ sendError: funct [
         <html> 
         <head>
             <title> err/2 </title>
+            <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" type="text/css">
         </head>
         <body>
             <h1> "Server error" </h1> <br />
