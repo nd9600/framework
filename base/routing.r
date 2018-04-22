@@ -117,17 +117,21 @@ convert_rule_to_parse_rule: funct [
 
         ; handles parameters
         any [
-            copy match_until_parameter to "{" (append converted_rule match_until_parameter)
+            copy match_until_parameter to "{"
             thru "}" 
             [
                 ; if the parameter was at the end of the rule
                 end ( 
-                    append converted_rule compose [ copy parameter to end (to-paren [keep parameter]) ]
+                    append converted_rule compose [ 
+                        (match_until_parameter) 
+                        copy parameter to end (to-paren [keep parameter]) 
+                    ]
                   )
 
                 ; if the parameter wasn't at the end of the rule
                 | copy char_after_parameter skip (
                     append converted_rule compose [
+                        (match_until_parameter)
                         copy parameter to (char_after_parameter) skip (to-paren [keep parameter])
                     ]
                   ) 
