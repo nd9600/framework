@@ -38,6 +38,32 @@ compile: funct [
         )
     ]
     
+    escaped_left_brace_and_percent: [copy data "\{%" (append output data)]
+    
+    for_loop: [
+        "{%" any whitespace "for" 
+            some whitespace copy iteratorIndex variable
+            some whitespace "in" 
+            some whitespace copy thingToIterateOver variable
+        any whitespace "%}"
+            copy stringToCompileRepeatedly to 
+        "{%" "{%" any whitespace "endfor" any whitespace "%}" ]
+        (
+            iteratorIndexAsVariable: to-word iteratorIndex
+            
+            thingToIterateOver: to-word thingToIterateOver
+            actualThingToIterateOver: select variables thingToIterateOver
+            
+            foreach i actualThingToIterateOver [
+                thisIterationsVariables: copy variables
+                insert thisIterationsVariables [:iteratorIndexAsVariable :i]
+                append output (compile stringToCompileRepeatedly thisIterationsVariables)
+            ]
+            
+            append output 
+        )
+    ]
+    
     ;'comment is already defined in rebol
     comment_rule: [ "{#" thru "#}" ]
     
@@ -46,6 +72,10 @@ compile: funct [
                 escaped_left_braces
             |
                 template_variable
+            |
+                escaped_left_brace_and_percent
+            |
+                for_loop
             |
                 comment_rule
             |
