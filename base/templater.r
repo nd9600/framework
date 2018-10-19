@@ -40,6 +40,7 @@ compile: funct [
     
     escaped_left_brace_and_percent: [copy data "\{%" (append output data)]
     
+    ; compile "{% for i in block %} {{ i }} {% endfor %}" make map! reduce ['block [1 2 3 4]]
     for_loop: [
         "{%" any whitespace "for" 
             some whitespace copy iteratorIndex variable
@@ -47,7 +48,7 @@ compile: funct [
             some whitespace copy thingToIterateOver variable
         any whitespace "%}"
             copy stringToCompileRepeatedly to 
-        "{%" "{%" any whitespace "endfor" any whitespace "%}" ]
+        "{%" "{%" any whitespace "endfor" any whitespace "%}"
         (
             iteratorIndexAsVariable: to-word iteratorIndex
             
@@ -56,11 +57,9 @@ compile: funct [
             
             foreach i actualThingToIterateOver [
                 thisIterationsVariables: copy variables
-                insert thisIterationsVariables [:iteratorIndexAsVariable :i]
+                append thisIterationsVariables reduce [:iteratorIndexAsVariable :i]
                 append output (compile stringToCompileRepeatedly thisIterationsVariables)
             ]
-            
-            append output 
         )
     ]
     
@@ -87,3 +86,4 @@ compile: funct [
     parse/all input_string rules
     output
 ]
+compile "{% for i in block %} {{ i }} {% endfor %}" make map! reduce ['block [1 2 3 4]]

@@ -1,5 +1,5 @@
 Rebol [
-    Title: "Tiny Framework - templater tests with comments"
+    Title: "Tiny Framework - templater comment tests"
 ]
 
 tests: context [
@@ -34,7 +34,7 @@ tests: context [
         compiled: templater/compile template variables
         wanted: {<title>First test with 123!</title>}
         assert [
-            (probe compiled) == (probe wanted)
+            (compiled) == (wanted)
         ]
     ]
     
@@ -47,7 +47,7 @@ tests: context [
         compiled: templater/compile template variables
         wanted: {<title>First test with 123!</title>}
         assert [
-            (probe compiled) == (probe wanted)
+            (compiled) == (wanted)
         ]
     ]
 ]
