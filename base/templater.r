@@ -38,7 +38,11 @@ compile: funct [
             actualVariablePath: load/all variablePath
             actualVariable: do bind actualVariablePath 'variables
              
-            append output mold actualVariable
+            either (block? actualVariable) [
+                append output mold actualVariable
+            ] [
+                append output actualVariable
+            ]
         )
     ]
     
