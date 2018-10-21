@@ -10,12 +10,12 @@ t_load: funct [
 
 compile: funct [
     input_string    [string!]   "the input to compile"
-    variables       [hash!]    "the variables to use to compile the input string"
+    variables       [map!]    "the variables to use to compile the input string"
 ] [        
     whitespace:     [#" " | tab | newline]
     digit:          charset "0123456789"
     letter:         charset [#"A" - #"Z" #"a" - #"z" ]
-    other_char:     charset ["_" "-" "'" ":"]
+    other_char:     charset ["_" "-" "/"]
     alphanum:       union letter digit
     any_character:  complement make bitset! []
     
@@ -32,9 +32,13 @@ compile: funct [
     template_variable: [
         "{{" any whitespace copy data variable any whitespace "}}"
         (
-            variable_name: to-word data
-            actual_variable: select variables variable_name
-            append output actual_variable
+            variablePath: append copy "variables/" data
+            
+            ; we have to bind actualVariablePath to this context or 'variables isn't defined for some reason
+            actualVariablePath: load/all variablePath
+            actualVariable: do bind actualVariablePath 'variables
+             
+            append output mold actualVariable
         )
     ]
     
@@ -86,4 +90,3 @@ compile: funct [
     parse/all input_string rules
     output
 ]
-compile "{% for i in block %} {{ i }} {% endfor %}" make map! reduce ['block [1 2 3 4]]
