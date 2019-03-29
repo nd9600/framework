@@ -104,13 +104,11 @@ handleControllerRequest: funct [
         ; return an error if the controller is invalid
         either (equal? length? route 1) [
             error_message: copy reform [route "is an invalid controller-method pair"]
-            ;print error_message
             return make response_obj compose [
                 status: 500 
                 data: (error_message)
             ]
-        ] [
-        
+        ] [        
             route_parameters: route_results/2
             controller_name: rejoin [route/1 ".r"]
             controller_function_name: copy route/2
@@ -123,11 +121,24 @@ handleControllerRequest: funct [
             controller_path: config/controllers_dir/:controller_name
             controller: context load controller_path
 
+            wordsInController: words-of controller
+            controllerFunctionNameAsLitWord: to-lit-word controller_function_name
+            controllerDoesntHaveFunction: none? find wordsInController controllerFunctionNameAsLitWord
+
+            if controllerDoesntHaveFunction [
+                error_message: copy reform [controller_path "doesn't have a function called" controller_function_name]
+                return make response_obj compose [
+                    status: 500
+                    mime: "text/html"
+                    data: (error_message)
+                ]
+            ]
+
             ; gets the result from calling the controller function
-            either (empty? route_parameters) [
-                controller_output: controller/(controller_function) request
+            controller_output: either (empty? route_parameters) [
+                controller/(controller_function) request
             ] [
-                controller_output: controller/(controller_function) request route_parameters
+                controller/(controller_function) request route_parameters
             ]
 
             mime: "text/html"
