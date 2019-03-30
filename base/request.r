@@ -9,12 +9,48 @@ request_obj: context [
     query_parameters: copy []
 ]
 
+makeBufferFromConnectionPort: funct [
+    buffer [string!]
+    connectionPort [port!]
+] [
+    ; gathers the browser's request, a line at a time. The host name of the client (the browser computer) is added to the buffer string. It is just for your own information. If you want, you could use the remote-ip address instead of the host name.
+    until [
+        line: first connectionPort
+
+        ; rebol's open/lines refinement seems to break with POST bodies, and it thinks the blank line between the HTTP header and body is the end of the request, so we have to manually add in the POST body ourselves, which is on one line, after a blank line after the header
+        leftInBuffer: to-string connectionPort/state/inBuffer
+        linesLeftInBuffer: to-block parse connectionPort/state/inBuffer "^M"
+
+        ; this might not be needed
+        notAtBlankLineBeforeBody: all [
+            find leftInBuffer "^/^M"
+            (index? find leftInBuffer "^/^M") == 1
+        ]
+        leftInBufferIsAtPostBody: all [
+            notAtBlankLineBeforeBody 
+            (length? linesLeftInBuffer) == 1
+        ]
+        repend buffer [line newline]
+
+        if leftInBufferIsAtPostBody [
+            repend buffer [newline first linesLeftInBuffer newline]
+            repend buffer ["Address: " connectionPort/host newline]
+        ]
+
+        leftInBufferIsAtPostBody
+    ]
+
+    buffer
+]
+
 makeRequest: funct [
     config [object!]
     buffer [string!]
 ] [
     query_string: copy ""
     relative_path: append copy config/public_prefix "index.html"
+
+    probe buffer
 
     ; parses the HTTP header and copies the requested relative_path to a variable
     ; http, / and /public/ are rewritten to /public/index.html

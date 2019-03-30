@@ -21,7 +21,7 @@ do %base/response.r
 ;stops the framework if a test fails
 do %tests.r
 
-listenPort: open/lines append tcp://: config/port  ; port used for web connections
+serverPort: open/lines append tcp://: config/port  ; port used for web connections
 
 print rejoin ["^/listening on port " config/port]
 
@@ -34,27 +34,29 @@ routing/print_routes
 ; holds the request information which is printed out as connections are made
 buffer: make string! 1024  ; will auto-expand if needed
 
-; processes each HTTP request from a web browser. The first step is to wait for a connection on the listenPort. When a connection is made, the httpPort variable is set to the TCP port connection and is then used to get the HTTP request from the browser and send the result back to the browser.
+; processes each HTTP request from a web browser. The first step is to wait for a connection on the serverPort. When a connection is made, the connectionPort variable is set to the TCP port connection and is then used to get the HTTP request from the browser and send the result back to the browser.
 forever [
     print rejoin [newline "#####"]
     print "waiting for request"
 
-    httpPort: first wait listenPort
+    connectionPort: first wait serverPort
     clear buffer
     print "waiting over"
 
     if error? error: try [
-        ; gathers the browser's request, a line at a time. The host name of the client (the browser computer) is added to the buffer string. It is just for your own information. If you want, you could use the remote-ip address instead of the host name.
-        while [not empty? http_request: first httpPort][
-            repend buffer [http_request newline]
-        ]
-        repend buffer ["Address: " httpPort/host newline]
+        buffer: makeBufferFromConnectionPort buffer connectionPort
+
+        ;response: make response_obj compose [
+        ;    status: 500
+        ;    mime: "text/html"
+        ;    data: (?? buffer)
+        ;]
         
         request: makeRequest config buffer
         print rejoin ["request: [" newline request "]" newline]
                      
         response: handleRequest config routing request
-        sendResponse response httpPort
+        sendResponse response connectionPort
 
         ; block must return something so we can 'try it
         none
@@ -72,5 +74,5 @@ forever [
 
     ; makes sure that the connection from the browser is closed, now that the requested web data has been returned.
     print "port closed"
-    close httpPort
+    close connectionPort
 ]
