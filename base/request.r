@@ -4,9 +4,11 @@ Rebol [
 ]
 
 request_obj: context [
+    headers: context []
     method: copy ""
     url: copy ""
     queryParameters: copy []
+    body: context []
 ]
 
 makeBufferFromConnectionPort: funct [
@@ -79,32 +81,45 @@ makeRequest: funct [
         ]
     ]
 
-    linesInBuffer: parse/all buffer to-string newline
-    httpHeaders: context []
-    foreach line next linesInBuffer [
-        ?? line
-        if (not empty? line) [
-            parsedLine: parse/all line ":"
-            isHttpKeyValuePair: (length? parsedLine) <> 1
-            ?? parsedLine
-            either isHttpKeyValuePair [
-                set [httpKey httpValue] parsedLine
-                print reform [httpKey httpValue]
-                set in httpHeaders :httpKey :httpValue
-            ] [
-                
-            ]
-        ]
-    ]
-    ?? httpHeaders
-
+    
+    set [httpHeaders httpBody] getHeadersAndBodyFromBuffer buffer
     parsedQueryParameters: parseQueryString queryString
 
     make request_obj compose/only [
+        headers: (httpHeaders)
         method: (method)
         url: (relativePath)
         queryParameters: (parsedQueryParameters)
+        body: (httpBody)
     ]
+]
+
+getHeadersAndBodyFromBuffer: funct [
+    buffer [string!]
+] [
+    linesInBuffer: parse/all buffer to-string newline
+    httpHeaders: context []
+    httpBody: context []
+    foreach line next linesInBuffer [
+        if (not empty? line) [
+            parsedLine: parse/all line ":"
+            isHttpKeyValuePair: (length? parsedLine) <> 1
+            either isHttpKeyValuePair [
+                set [httpKey httpValue] parsedLine
+                httpHeaders: make httpHeaders reduce [(to-set-word lowercase :httpKey) (trim :httpValue)]
+            ] [
+                s: first parsedLine
+                if (contains? s "=") [
+                    bodyKeyValuePairs: parse/all s "&"
+                    foreach bodyKeyValuePair bodyKeyValuePairs [
+                        set [bodyKey bodyValue] parse/all bodyKeyValuePair "="
+                        httpBody: make httpBody reduce [(to-set-word :bodyKey) (:bodyValue)]
+                    ]
+                ]
+            ]
+        ]
+    ]
+    reduce [httpHeaders httpBody]
 ]
 
 handleRequest: funct [

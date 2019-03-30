@@ -2,6 +2,14 @@ Rebol [
     Title: "Tiny Framework - helper functions"
 ]
 
+contains?: funct [
+    "returns if 's contains 'e"
+    s [series!] "the series to search in"
+    e [any-type!] "the element to search for"
+] [
+    not none? find s e
+]
+
 startsWith: funct [
     "returns whether 'series starts with 'value"
     series [series!]

@@ -5,11 +5,12 @@ Rebol [
 getTest: func [
     request [object!]
 ] [
-    "hello world"
+    mold request
 ]
 
 postTest: func [
     request [object!]
 ] [
     "hello POST world"
+    mold request
 ]
