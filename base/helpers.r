@@ -84,23 +84,20 @@ errorToString: funct [
     error [object!]
 ] [
     errorIDBlock: get error/id
-    errorBlock: context [
-        arg1: error/arg1
-        arg2: error/arg2
-        arg3: error/arg3
-        usefulError: to-block bind 'errorIDBlock 'arg1
-    ]
+    arg1: to-string error/arg1
+    arg2: to-string error/arg2
+    arg3: to-string error/arg3
+    usefulError: bind to-block errorIDBlock 'arg1
 
     ; adds a space in between each thing
-    usefulErrorBlock: copy errorBlock/usefulError
-    usefulErrorString: reform usefulErrorBlock
+    usefulErrorString: reform reduce usefulError
 
     fieldsWeWant: context [
         near: error/near
         where: error/where
     ]
 
-    rejoin [usefulErrorString newline newline objectToString fieldsWeWant]
+    rejoin [usefulErrorString newline form errorIDBlock newline newline objectToString fieldsWeWant]
 ]
 
 findFiles: funct [

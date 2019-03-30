@@ -29,7 +29,7 @@ makeBufferFromConnectionPort: funct [
         until [
             line: first connectionPort
             repend buffer [line newline]
-            
+
             ; rebol's open/lines refinement seems to break with POST bodies, and it thinks the blank line between the HTTP header and body is the end of the request, so we have to manually add in the POST body ourselves, which is on one line, after a blank line after the header
             leftInBuffer: to-string connectionPort/state/inBuffer
             linesLeftInBuffer: to-block parse connectionPort/state/inBuffer "^M"
@@ -63,8 +63,6 @@ makeRequest: funct [
     queryString: copy ""
     relativePath: append copy config/publicPrefix "index.html"
 
-    ?? buffer
-
     ; parses the HTTP header and copies the requested relativePath to a variable
     ; http, / and /public/ are rewritten to /public/index.html
     parse buffer [
@@ -80,6 +78,25 @@ makeRequest: funct [
             |   copy relativePath to " "
         ]
     ]
+
+    linesInBuffer: parse/all buffer to-string newline
+    httpHeaders: context []
+    foreach line next linesInBuffer [
+        ?? line
+        if (not empty? line) [
+            parsedLine: parse/all line ":"
+            isHttpKeyValuePair: (length? parsedLine) <> 1
+            ?? parsedLine
+            either isHttpKeyValuePair [
+                set [httpKey httpValue] parsedLine
+                print reform [httpKey httpValue]
+                set in httpHeaders :httpKey :httpValue
+            ] [
+                
+            ]
+        ]
+    ]
+    ?? httpHeaders
 
     parsedQueryParameters: parseQueryString queryString
 
