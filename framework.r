@@ -3,12 +3,14 @@ Rebol [
     Documentation: http://www.rebol.net/cookbook/recipes/0057.html
 ]
 
+do %base/moduleLoader.r
+
 ;brings in the base FP functions
 do %base/functional.r
 
 do %base/helpers.r
 
-config: context load %config.r
+config: import %config.r
 
 routing: context load %base/routing.r
 
