@@ -14,32 +14,46 @@ makeBufferFromConnectionPort: funct [
     connectionPort [port!]
 ] [
     ; gathers the browser's request, a line at a time. The host name of the client (the browser computer) is added to the buffer string. It is just for your own information. If you want, you could use the remote-ip address instead of the host name.
+
+    lineCounter: 0
+    httpMethod: copy "GET"
+    httpMethodIsGET: true
     until [
         line: first connectionPort
 
-        ; rebol's open/lines refinement seems to break with POST bodies, and it thinks the blank line between the HTTP header and body is the end of the request, so we have to manually add in the POST body ourselves, which is on one line, after a blank line after the header
-        leftInBuffer: to-string connectionPort/state/inBuffer
-        linesLeftInBuffer: to-block parse connectionPort/state/inBuffer "^M"
-
-        ; this might not be needed
-        notAtBlankLineBeforeBody: all [
-            find leftInBuffer "^/^M"
-            (index? find leftInBuffer "^/^M") == 1
-        ]
-        leftInBufferIsAtPostBody: all [
-            notAtBlankLineBeforeBody 
-            (length? linesLeftInBuffer) == 1
-        ]
-        repend buffer [line newline]
-
-        if leftInBufferIsAtPostBody [
-            repend buffer [newline first linesLeftInBuffer newline]
-            repend buffer ["Address: " connectionPort/host newline]
+        if (lineCounter == 0) [
+            httpMethod: first parse line " "
+            httpMethodIsGET: httpMethod == "GET"
+            lineCounter: lineCounter + 1
         ]
 
-        leftInBufferIsAtPostBody
+        either httpMethodIsGET [
+            repend buffer [line newline]
+        ] [
+            ; rebol's open/lines refinement seems to break with POST bodies, and it thinks the blank line between the HTTP header and body is the end of the request, so we have to manually add in the POST body ourselves, which is on one line, after a blank line after the header
+            leftInBuffer: to-string connectionPort/state/inBuffer
+            linesLeftInBuffer: to-block parse connectionPort/state/inBuffer "^M"
+
+            ; this might not be needed
+            notAtBlankLineBeforeBody: all [
+                find leftInBuffer "^/^M"
+                (index? find leftInBuffer "^/^M") == 1
+            ]
+            leftInBufferIsAtPostBody: all [
+                notAtBlankLineBeforeBody 
+                (length? linesLeftInBuffer) == 1
+            ]
+            repend buffer [line newline]
+
+            if leftInBufferIsAtPostBody [
+                repend buffer [newline first linesLeftInBuffer newline]
+            ]
+
+            leftInBufferIsAtPostBody
+        ]
     ]
 
+    repend buffer ["Address: " connectionPort/host newline]
     buffer
 ]
 
@@ -50,21 +64,21 @@ makeRequest: funct [
     query_string: copy ""
     relative_path: append copy config/public_prefix "index.html"
 
-    probe buffer
+    ?? buffer
 
     ; parses the HTTP header and copies the requested relative_path to a variable
     ; http, / and /public/ are rewritten to /public/index.html
     parse buffer [
-        [
-            copy method routing/route_methods_rule
-        ]
+        copy method routing/route_methods_rule
         [
             "http"
-            | "/ "
-            | config/public_prefix "HTTP"
-            | copy relative_path to "?"
-              skip copy query_string to " "
-            | copy relative_path to " "
+            |   "/ "
+            |   config/public_prefix "HTTP"
+            |   [
+                    copy relative_path to "?"
+                    skip copy query_string to " "
+                ]
+            |   copy relative_path to " "
         ]
     ]
 
