@@ -15,21 +15,21 @@ makeBufferFromConnectionPort: funct [
 ] [
     ; gathers the browser's request, a line at a time. The host name of the client (the browser computer) is added to the buffer string. It is just for your own information. If you want, you could use the remote-ip address instead of the host name.
 
-    lineCounter: 0
-    httpMethod: copy "GET"
-    httpMethodIsGET: true
-    until [
-        line: first connectionPort
+    line: first connectionPort
+    repend buffer [line newline]
 
-        if (lineCounter == 0) [
-            httpMethod: first parse line " "
-            httpMethodIsGET: httpMethod == "GET"
-            lineCounter: lineCounter + 1
-        ]
+    httpMethod: first parse line " "
+    httpMethodIsGET: httpMethod == "GET"
 
-        either httpMethodIsGET [
+    either httpMethodIsGET [
+        while [not empty? line: first connectionPort][
             repend buffer [line newline]
-        ] [
+        ]
+    ] [
+        until [
+            line: first connectionPort
+            repend buffer [line newline]
+            
             ; rebol's open/lines refinement seems to break with POST bodies, and it thinks the blank line between the HTTP header and body is the end of the request, so we have to manually add in the POST body ourselves, which is on one line, after a blank line after the header
             leftInBuffer: to-string connectionPort/state/inBuffer
             linesLeftInBuffer: to-block parse connectionPort/state/inBuffer "^M"
@@ -43,7 +43,6 @@ makeBufferFromConnectionPort: funct [
                 notAtBlankLineBeforeBody 
                 (length? linesLeftInBuffer) == 1
             ]
-            repend buffer [line newline]
 
             if leftInBufferIsAtPostBody [
                 repend buffer [newline first linesLeftInBuffer newline]

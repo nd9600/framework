@@ -46,16 +46,17 @@ forever [
     if error? error: try [
         buffer: makeBufferFromConnectionPort buffer connectionPort
 
-        ;response: make response_obj compose [
-        ;    status: 500
-        ;    mime: "text/html"
-        ;    data: (?? buffer)
-        ;]
+        response: make response_obj compose [
+            status: 500
+            mime: "text/html"
+            data: (?? buffer)
+        ]
+        sendResponse response connectionPort
         
-        request: makeRequest config buffer
-        print rejoin ["request: [" newline request "]" newline]
+        ;request: makeRequest config buffer
+        ;print rejoin ["request: [" newline request "]" newline]
                      
-        response: handleRequest config routing request
+        ;response: handleRequest config routing request
         sendResponse response connectionPort
 
         ; block must return something so we can 'try it
