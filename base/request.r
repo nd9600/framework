@@ -62,13 +62,15 @@ makeRequest: funct [
     config [object!]
     buffer [string!]
 ] [
+    routeMethodsRule: copy ["GET" | "POST" | "HEAD" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH"]
+
     queryString: copy ""
     relativePath: append copy config/publicPrefix "index.html"
 
     ; parses the HTTP header and copies the requested relativePath to a variable
     ; http, / and /public/ are rewritten to /public/index.html
     parse buffer [
-        copy method routing/routeMethodsRule
+        copy method routeMethodsRule
         [
             "http"
             |   "/ "

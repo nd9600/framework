@@ -2,14 +2,16 @@ Rebol [
     Title: "Tiny Framework - functional programming functions"
 ]
 
-;apply: function [f x][f x] ;monadic argument only
-;apply: function [f args][do head insert args 'f]
-;apply: function [f args][do append copy [f] args]
-;apply: function [f args][do compose [f (args)] ]
+;applyF: funct [f x][f x] ;monadic argument only
+;applyF: funct [f args][do head insert args 'f]
+;applyF: funct [f args][do append copy [f] args]
+applyF: funct [f args][do compose [f (args)] ]
 
 lambda: funct [
     "makes lambda functions - https://gist.github.com/draegtun/11b0258377a3b49bfd9dc91c3a1c8c3d"
     block [block!] "the function to make"
+    /applyArgs "immediately apply the lambda function to arguments"
+        args [any-type!] "the arguments to apply the function to, can be a block!"
 ] [
     flatten: funct[b][
         flattened: copy []
@@ -48,7 +50,14 @@ lambda: funct [
         do make error! {cannot match ? with ?name placeholders}
     ]
 
-    funct spec block
+    f: funct spec block
+    
+    either applyArgs [
+        argsAsBlock: either block? args [args] [reduce [args]]
+        applyF :f argsAsBlock
+    ] [
+        :f
+    ]
 ]
 
 f_map: funct [

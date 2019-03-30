@@ -5,9 +5,6 @@ Rebol [
 ; used to check if the HTTP request uses an acceptable method
 acceptedRouteMethods: copy ["ANY" "GET" "POST" "HEAD" "PUT" "DELETE" "CONNECT" "OPTIONS" "TRACE" "PATCH"]
 
-; needed to parse the HTTP request
-routeMethodsRule: copy ["GET" | "POST" | "HEAD" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH"]
-
 routes: copy []
 unconvertedRoutes: copy []
 
@@ -25,8 +22,8 @@ printRoutes: funct [
     print "##########"
 ]
 
-getRoutes: func [
-    "gets the app's routes"
+setRoutes: func [
+    "sets the app's routes"
     routeFilesToLoad [block!] "the routes to load, containing files or strings"
     /local tempRoutes
 ] [
@@ -47,7 +44,7 @@ getRoutes: func [
 
         foreach actualRoute routesFromThisFile [
 
-            ; if the routeMethod is ANY, GET or POST, add it to the appropriate series
+            ; if the routeMethod is ANY, GET, POST etc, add it to the appropriate series
             ; otherwise, add it to the GET series
             routeMethod: select actualRoute 'method
             if (not find acceptedRouteMethods routeMethod) [

@@ -21,7 +21,7 @@ tests: context [
 
     testHandlingSuccessfulPublicRequest: funct [] [
         routing: context load %base/routing.r
-        routing/getRoutes copy []
+        routing/setRoutes copy []
 
         request: make request_obj [
             method: "GET"
@@ -40,7 +40,7 @@ tests: context [
 
     testHandling404PublicRequest: funct [] [
         routing: context load %base/routing.r
-        routing/getRoutes copy []
+        routing/setRoutes copy []
 
         request: make request_obj [
             method: "GET"
@@ -64,7 +64,7 @@ tests: context [
             ]
         ]
         }
-        routing/getRoutes copy reduce [routesStr1]
+        routing/setRoutes copy reduce [routesStr1]
 
         request: make request_obj [
             method: "GET"
@@ -82,7 +82,7 @@ tests: context [
 
     testHandlingControllerRequestForNonexistentController: funct [] [
         routing: context load %base/routing.r
-        routing/getRoutes copy []
+        routing/setRoutes copy []
 
         request: make request_obj [
             method: "GET"
@@ -106,7 +106,7 @@ tests: context [
             ]
         ]
         }
-        routing/getRoutes copy reduce [routesStr1]
+        routing/setRoutes copy reduce [routesStr1]
 
         request: make request_obj [
             method: "GET"

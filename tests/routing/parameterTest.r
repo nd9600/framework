@@ -28,7 +28,7 @@ tests: context [
         ]
         }
 
-        routing/getRoutes reduce [routesStr1]
+        routing/setRoutes reduce [routesStr1]
     ]
 
     tearDown: func [] [

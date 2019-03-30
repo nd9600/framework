@@ -29,7 +29,7 @@ print rejoin ["^/listening on port " config/port]
 
 ; set up the routes
 routeFilesLocations: copy f_map lambda [append copy config/routingDir ?] config/routeFiles
-routing/getRoutes routeFilesLocations
+routing/setRoutes routeFilesLocations
 
 routing/printRoutes
 
