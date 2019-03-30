@@ -2,34 +2,34 @@ Rebol [
     Title: "Tiny Framework - templater"
 ]
 
-t_load: funct [
-    template_name ["string!"] "the template.path"
+tLoad: funct [
+    templateName ["string!"] "the template.path"
 ] [
-    read config/templates_dir/:template_name
+    read config/templatesDir/:templateName
 ]
 
 compile: funct [
-    input_string    [string!]   "the input to compile"
+    inputString    [string!]   "the input to compile"
     variables       [map!]    "the variables to use to compile the input string"
 ] [        
     whitespace:     [#" " | tab | newline]
     digit:          charset "0123456789"
     letter:         charset [#"A" - #"Z" #"a" - #"z" ]
-    other_char:     charset ["_" "-" "/"]
+    otherChar:     charset ["_" "-" "/"]
     alphanum:       union letter digit
-    any_character:  complement make bitset! []
+    anyCharacter:  complement make bitset! []
     
     ; a variable name must start with a letter and can be followed by a series of letters, digits or underscores or dashes
-    variable: [letter any [alphanum | other_char]]
+    variable: [letter any [alphanum | otherChar]]
     
     ; copy any character into the output
-    anything: [copy data any_character (append output data)]
+    anything: [copy data anyCharacter (append output data)]
     
     ; copy escaped left braces nto the output
-    escaped_left_braces: [copy data "\{{" (append output data)]
+    escapedLeftBraces: [copy data "\{{" (append output data)]
     
     ; copy the value of a variable into the output, or "none" if the variable doesn't exist
-    template_variable: [
+    templateVariable: [
         "{{" any whitespace copy data variable any whitespace "}}"
         (
             variablePath: append copy "variables/" data
@@ -46,10 +46,10 @@ compile: funct [
         )
     ]
     
-    escaped_left_brace_and_percent: [copy data "\{%" (append output data)]
+    escapedLeftBraceAndPercent: [copy data "\{%" (append output data)]
     
     ; compile "{% for i in block %} {{ i }} {% endfor %}" make map! reduce ['block [1 2 3 4]]
-    for_loop: [
+    forLoop: [
         "{%" any whitespace "for" 
             some whitespace copy iteratorIndex variable
             some whitespace "in" 
@@ -72,25 +72,25 @@ compile: funct [
     ]
     
     ;'comment is already defined in rebol
-    comment_rule: [ "{#" thru "#}" ]
+    commentRule: [ "{#" thru "#}" ]
     
     rules: [
         any [
-                escaped_left_braces
+                escapedLeftBraces
             |
-                template_variable
+                templateVariable
             |
-                escaped_left_brace_and_percent
+                escapedLeftBraceAndPercent
             |
-                for_loop
+                forLoop
             |
-                comment_rule
+                commentRule
             |
                 anything
         ]  
     ]
     
     output: copy ""
-    parse/all input_string rules
+    parse/all inputString rules
     output
 ]

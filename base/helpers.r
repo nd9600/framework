@@ -37,11 +37,11 @@ flatten: funct[
     flattened
 ]
 
-parse_query_string: funct [
+parseQueryString: funct [
     "Parses a string string, returning a map"
-    query_string [string!]
+    queryString [string!]
 ] [
-    pairs: parse query_string "&"
+    pairs: parse queryString "&"
 
     ; puts the values in a block, so they don't conflict with the keys
     parameters: f_map lambda [
@@ -58,7 +58,7 @@ blockToString: funct [
     rejoin [f_map lambda [append to-string ? "^/"] b]
 ]
 
-sep_join: funct [
+sepJoin: funct [
     "Returns a reduced block of values as a string, separated by a separator"
     block [block!]
     sep [string! char!]

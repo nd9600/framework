@@ -26,10 +26,10 @@ serverPort: open/lines append tcp://: config/port  ; port used for web connectio
 print rejoin ["^/listening on port " config/port]
 
 ; set up the routes
-routeFilesLocations: copy f_map lambda [append copy config/routing_dir ?] config/route_files
-routing/get_routes routeFilesLocations
+routeFilesLocations: copy f_map lambda [append copy config/routingDir ?] config/routeFiles
+routing/getRoutes routeFilesLocations
 
-routing/print_routes
+routing/printRoutes
 
 ; holds the request information which is printed out as connections are made
 buffer: make string! 1024  ; will auto-expand if needed

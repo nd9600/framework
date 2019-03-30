@@ -8,10 +8,10 @@ tests: context [
 
     setUp: func [] [
         config: context load {
-            public_dir: %tests/needed_data/storage/public/ 
-            public_prefix: "/public/"
-            routing_dir: %routing/
-            controllers_dir: %tests/needed_data/controllers
+            publicDir: %tests/needed_data/storage/public/ 
+            publicPrefix: "/public/"
+            routingDir: %routing/
+            controllersDir: %tests/needed_data/controllers
         }
     ]
 
@@ -21,7 +21,7 @@ tests: context [
 
     testHandlingSuccessfulPublicRequest: funct [] [
         routing: context load %base/routing.r
-        routing/get_routes copy []
+        routing/getRoutes copy []
 
         request: make request_obj [
             method: "GET"
@@ -40,7 +40,7 @@ tests: context [
 
     testHandling404PublicRequest: funct [] [
         routing: context load %base/routing.r
-        routing/get_routes copy []
+        routing/getRoutes copy []
 
         request: make request_obj [
             method: "GET"
@@ -55,20 +55,20 @@ tests: context [
 
     testHandlingSuccessfulControllerRequest: funct [] [
         routing: context load %base/routing.r
-        routes_str1: {
+        routesStr1: {
         routes: [
             [
-                url "/route_test" 
+                url "/routeTest" 
                 method "GET"
                 controller "FirstController@index"
             ]
         ]
         }
-        routing/get_routes copy reduce [routes_str1]
+        routing/getRoutes copy reduce [routesStr1]
 
         request: make request_obj [
             method: "GET"
-            url: "/route_test"
+            url: "/routeTest"
         ]
         response: handleRequest config routing request
 
@@ -82,35 +82,35 @@ tests: context [
 
     testHandlingControllerRequestForNonexistentController: funct [] [
         routing: context load %base/routing.r
-        routing/get_routes copy []
+        routing/getRoutes copy []
 
         request: make request_obj [
             method: "GET"
-            url: "/route_test2"
+            url: "/routeTest2"
         ]
         response: handleRequest config routing request
         assert [
             response/status == 404
-            response/data == "There were no routes found for: /route_test2"
+            response/data == "There were no routes found for: /routeTest2"
         ]
     ]
 
     testHandlingControllerRequestForIncorrectController: funct [] [
         routing: context load %base/routing.r
-        routes_str1: {
+        routesStr1: {
         routes: [
             [
-                url "/route_test" 
+                url "/routeTest" 
                 method "GET"
                 controller "FirstController"
             ]
         ]
         }
-        routing/get_routes copy reduce [routes_str1]
+        routing/getRoutes copy reduce [routesStr1]
 
         request: make request_obj [
             method: "GET"
-            url: "/route_test"
+            url: "/routeTest"
         ]
         response: handleRequest config routing request
         assert [

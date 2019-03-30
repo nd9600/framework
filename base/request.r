@@ -6,7 +6,7 @@ Rebol [
 request_obj: context [
     method: copy ""
     url: copy ""
-    query_parameters: copy []
+    queryParameters: copy []
 ]
 
 makeBufferFromConnectionPort: funct [
@@ -61,33 +61,33 @@ makeRequest: funct [
     config [object!]
     buffer [string!]
 ] [
-    query_string: copy ""
-    relative_path: append copy config/public_prefix "index.html"
+    queryString: copy ""
+    relativePath: append copy config/publicPrefix "index.html"
 
     ?? buffer
 
-    ; parses the HTTP header and copies the requested relative_path to a variable
+    ; parses the HTTP header and copies the requested relativePath to a variable
     ; http, / and /public/ are rewritten to /public/index.html
     parse buffer [
-        copy method routing/route_methods_rule
+        copy method routing/routeMethodsRule
         [
             "http"
             |   "/ "
-            |   config/public_prefix "HTTP"
+            |   config/publicPrefix "HTTP"
             |   [
-                    copy relative_path to "?"
-                    skip copy query_string to " "
+                    copy relativePath to "?"
+                    skip copy queryString to " "
                 ]
-            |   copy relative_path to " "
+            |   copy relativePath to " "
         ]
     ]
 
-    parsed_query_parameters: parse_query_string query_string
+    parsedQueryParameters: parseQueryString queryString
 
     make request_obj compose/only [
         method: (method)
-        url: (relative_path)
-        query_parameters: (parsed_query_parameters)
+        url: (relativePath)
+        queryParameters: (parsedQueryParameters)
     ]
 ]
 
@@ -96,7 +96,7 @@ handleRequest: funct [
     routing [object!]
     request [object!]
 ] [
-    either startsWith request/url config/public_prefix [
+    either startsWith request/url config/publicPrefix [
         handlePublicRequest config request
     ] [
         handleControllerRequest config routing request
@@ -107,20 +107,20 @@ handlePublicRequest: funct [
     config [object!]
     request [object!]
 ] [
-    ; the url has the public_prefix at the start
-    relative_path: find/tail request/url config/public_prefix
+    ; the url has the publicPrefix at the start
+    relativePath: find/tail request/url config/publicPrefix
 
     ; check that the requested file exists, read the file and send it to the browser
     any [
-        if not exists? config/public_dir/:relative_path [
+        if not exists? config/publicDir/:relativePath [
             return make response_obj compose [
                 status: 404
                 data: (request/url)
             ]
         ]
         if error? try [
-            mime: getMimeType relative_path
-            data: read/binary config/public_dir/:relative_path
+            mime: getMimeType relativePath
+            data: read/binary config/publicDir/:relativePath
 
             return make response_obj compose [
                 status: 200 
@@ -141,54 +141,54 @@ handleControllerRequest: funct [
     routing [object!]
     request [object!]
 ] [
-    route_results: routing/find_route request
-    either (none? route_results) [
+    routeResults: routing/findRoute request
+    either (none? routeResults) [
         return make response_obj compose [
             status: 404
             data: (reform ["There were no routes found for:" request/url])
         ]
     ] [
-        ;print append copy "route_results are: " mold route_results  
-        route: parse route_results/1 "@"
+        ;print append copy "routeResults are: " mold routeResults  
+        route: parse routeResults/1 "@"
 
         ; return an error if the controller is invalid
         either (equal? length? route 1) [
-            error_message: copy reform [route "is an invalid controller-method pair"]
+            errorMessage: copy reform [route "is an invalid controller-method pair"]
             return make response_obj compose [
                 status: 500 
-                data: (error_message)
+                data: (errorMessage)
             ]
         ] [        
-            route_parameters: route_results/2
+            routeParameters: routeResults/2
             controller_name: rejoin [route/1 ".r"]
-            controller_function_name: copy route/2
-            controller_function: to-word controller_function_name
+            controllerFunction_name: copy route/2
+            controllerFunction: to-word controllerFunction_name
 
             ;print rejoin ["route: " mold route  ]
-            ;print rejoin ["route_parameters: " mold route_parameters]
+            ;print rejoin ["routeParameters: " mold routeParameters]
 
             ; execute the wanted function from the controller file
-            controller_path: config/controllers_dir/:controller_name
-            controller: context load controller_path
+            controllerPath: config/controllersDir/:controller_name
+            controller: context load controllerPath
 
             wordsInController: words-of controller
-            controllerFunctionNameAsLitWord: to-lit-word controller_function_name
+            controllerFunctionNameAsLitWord: to-lit-word controllerFunction_name
             controllerDoesntHaveFunction: none? find wordsInController controllerFunctionNameAsLitWord
 
             if controllerDoesntHaveFunction [
-                error_message: copy reform [controller_path "doesn't have a function called" controller_function_name]
+                errorMessage: copy reform [controllerPath "doesn't have a function called" controllerFunction_name]
                 return make response_obj compose [
                     status: 500
                     mime: "text/html"
-                    data: (error_message)
+                    data: (errorMessage)
                 ]
             ]
 
             ; gets the result from calling the controller function
-            controller_output: either (empty? route_parameters) [
-                controller/(controller_function) request
+            controller_output: either (empty? routeParameters) [
+                controller/(controllerFunction) request
             ] [
-                controller/(controller_function) request route_parameters
+                controller/(controllerFunction) request routeParameters
             ]
 
             mime: "text/html"
@@ -206,10 +206,10 @@ handleControllerRequest: funct [
 ]
 
 getMimeType: funct [
-    relative_path [string!]
+    relativePath [string!]
 ] [
     mime: "text/plain"
-    parse relative_path [
+    parse relativePath [
         thru "."
         [
             "html" (mime: "text/html")

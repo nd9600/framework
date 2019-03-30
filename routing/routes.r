@@ -17,13 +17,13 @@ routes: [
     ]
 
     [
-        url "/route_test" 
+        url "/routeTest" 
         method "GET"
         controller "FirstController@index"
     ]
 
     [
-        url "/route_test/{parameter}" 
-        controller "FirstController@param_test"
+        url "/routeTest/{parameter}" 
+        controller "FirstController@paramTest"
     ]
 ]

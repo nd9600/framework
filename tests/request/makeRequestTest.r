@@ -8,10 +8,10 @@ tests: context [
 
     setUp: func [] [
         config: context load {
-            public_dir: %tests/needed_data/storage/public/ 
-            public_prefix: "/public/"
-            routing_dir: %routing/
-            controllers_dir: %tests/needed_data/controllers
+            publicDir: %tests/needed_data/storage/public/ 
+            publicPrefix: "/public/"
+            routingDir: %routing/
+            controllersDir: %tests/needed_data/controllers
         }
     ]
 
@@ -20,30 +20,30 @@ tests: context [
     ]
 
     testMakingRequestForGETRequestAndControllerPath: funct [] [
-        buffer: copy "GET /route_test/123 HTTP/1.1"
+        buffer: copy "GET /routeTest/123 HTTP/1.1"
         request: makeRequest config buffer
         assert [
             request/method == "GET"
-            request/url == "/route_test/123"
+            request/url == "/routeTest/123"
         ]
     ]
 
     testMakingRequestForPOSTRequestAndControllerPath: funct [] [
-        buffer: copy "POST /route_test/123 HTTP/1.1"
+        buffer: copy "POST /routeTest/123 HTTP/1.1"
         request: makeRequest config buffer
         assert [
             request/method == "POST"
-            request/url == "/route_test/123"
+            request/url == "/routeTest/123"
         ]
     ]
 
     testMakingRequestForGETRequestAndControllerPathAndQueryParameters: funct [] [
-        buffer: copy "GET /route_test/123?a=2&b=asd&c=d1f HTTP/1.1"
+        buffer: copy "GET /routeTest/123?a=2&b=asd&c=d1f HTTP/1.1"
         request: makeRequest config buffer
         assert [
             request/method == "GET"
-            request/url == "/route_test/123"
-            request/query_parameters == [a "2" b "asd" c "d1f"]
+            request/url == "/routeTest/123"
+            request/queryParameters == [a "2" b "asd" c "d1f"]
         ]
     ]
 
